@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FootScope</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="logo-area">
+        <div class="logo-ball">⚽</div>
+        <div>
+            <h1>FootScope</h1>
+            <p>Le football en direct</p>
+        </div>
+    </div>
+
+    <button id="refreshBtn" class="refresh-btn">
+        🔄 Actualiser
+    </button>
+</header>
+
+<nav class="navigation">
+
+    <button class="nav-btn active" data-page="home">
+        🏠 Accueil
+    </button>
+
+    <button class="nav-btn" data-page="history">
+        📋 Mes matchs
+    </button>
+
+    <button class="nav-btn" data-page="stats">
+        📊 Statistiques
+    </button>
+
+    <button class="nav-btn" data-page="awards">
+        🏆 Palmarès
+    </button>
+
+</nav>
+
+<main>
+
+    <!-- ACCUEIL -->
+
+    <section id="home" class="page active">
+
+        <div class="hero">
+            <span class="small-title">FOOTBALL</span>
+
+            <h2>Les matchs du jour</h2>
+
+            <p>
+                Choisis une compétition pour voir tous ses matchs.
+            </p>
+        </div>
+
+        <div id="apiStatus" class="api-status">
+            Connexion à API-Football...
+        </div>
+
+        <div class="date-navigation">
+
+            <button id="previousDay" class="date-btn">
+                ◀
+            </button>
+
+            <div class="date-center">
+                <span id="selectedDate">
+                    Chargement...
+                </span>
+            </div>
+
+            <button id="nextDay" class="date-btn">
+                ▶
+            </button>
+
+        </div>
+
+        <!-- COMPÉTITIONS -->
+
+        <div id="competitionsContainer" class="competitions-container">
+            <div class="loading">
+                ⚽ Chargement des compétitions...
+            </div>
+        </div>
+
+        <!-- MATCHS DE LA COMPÉTITION -->
+
+        <div id="competitionMatches" class="competition-matches hidden">
+
+            <div class="competition-title-row">
+
+                <button id="backToCompetitions" class="back-btn">
+                    ← Compétitions
+                </button>
+
+                <div id="selectedCompetitionTitle"></div>
+
+            </div>
+
+            <div id="matchesContainer" class="matches-container"></div>
+
+        </div>
+
+    </section>
+
+
+    <!-- HISTORIQUE -->
+
+    <section id="history" class="page">
+
+        <div class="section-header">
+
+            <span class="small-title">
+                HISTORIQUE
+            </span>
+
+            <h2>Mes matchs</h2>
+
+            <p>
+                Tous les matchs que tu as enregistrés.
+            </p>
+
+        </div>
+
+        <div class="filters">
+
+            <input
+                id="searchInput"
+                type="text"
+                placeholder="🔎 Rechercher une équipe..."
+            >
+
+            <select id="leagueFilter">
+                <option value="all">
+                    Toutes les compétitions
+                </option>
+            </select>
+
+            <select id="seasonFilter">
+                <option value="all">
+                    Toutes les saisons
+                </option>
+            </select>
+
+            <select id="ratingFilter">
+
+                <option value="all">
+                    Toutes les notes
+                </option>
+
+                <option value="9">
+                    ⭐ 9 à 10
+                </option>
+
+                <option value="7">
+                    ⭐ 7 à 8.9
+                </option>
+
+                <option value="5">
+                    ⭐ 5 à 6.9
+                </option>
+
+                <option value="0">
+                    ⭐ 0 à 4.9
+                </option>
+
+            </select>
+
+        </div>
+
+        <div id="historyContainer" class="history-container">
+
+            <div class="empty">
+                Aucun match enregistré.
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- STATISTIQUES -->
+
+    <section id="stats" class="page">
+
+        <div class="section-header">
+
+            <span class="small-title">
+                STATISTIQUES
+            </span>
+
+            <h2>Mes statistiques</h2>
+
+        </div>
+
+        <div id="statsContainer"></div>
+
+        <h3 class="block-title">
+            📊 Par compétition
+        </h3>
+
+        <div id="competitionStats"></div>
+
+        <h3 class="block-title">
+            📅 Par mois
+        </h3>
+
+        <div id="monthlyStats"></div>
+
+        <h3 class="block-title">
+            🏆 Par saison
+        </h3>
+
+        <div id="seasonStats"></div>
+
+    </section>
+
+
+    <!-- PALMARÈS -->
+
+    <section id="awards" class="page">
+
+        <div class="section-header">
+
+            <span class="small-title">
+                PALMARÈS
+            </span>
+
+            <h2>Mon palmarès</h2>
+
+        </div>
+
+        <div id="awardsContainer"></div>
+
+        <h3 class="block-title">
+            ⭐ Mes joueurs préférés
+        </h3>
+
+        <div id="playersRanking"></div>
+
+    </section>
+
+</main>
+
+
+<!-- MODAL -->
+
+<div id="matchModal" class="modal">
+
+    <div class="modal-box">
+
+        <button id="closeModal" class="close-modal">
+            ✕
+        </button>
+
+        <div id="modalContent"></div>
+
+    </div>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
