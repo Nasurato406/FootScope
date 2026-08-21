@@ -1,89 +1,161 @@
 /* =========================================================
-   FOOTSCOPE
-   VERSION CORRIGÉE
-   - Historique persistant
-   - Score sauvegardé
-   - Buts vus corrigés
-   - Matchs notés accessibles depuis les statistiques
-   - Compatibilité avec les anciennes données
+FOOTSCOPE
+API-FOOTBALL
+
+VERSION :
+⭐ JOUEUR PRÉFÉRÉ
+🏆 HOMME DU MATCH OFFICIEL
+⚽ BUTS CONSERVÉS DANS L'HISTORIQUE
+💬 COMMENTAIRES CONSERVÉS
+📊 STATISTIQUES CONSERVÉES
 ========================================================= */
 
+
 /* =========================================================
-   🔴 TA CLÉ API
+🔴🔴🔴 TA CLÉ API 🔴🔴🔴
+REMPLACE UNIQUEMENT LE TEXTE ENTRE LES GUILLEMETS
 ========================================================= */
 
 const API_KEY = "25fd0757eec89ba850a53745eab92ab7";
 
+
 /* =========================================================
-   API
+API
 ========================================================= */
 
-const API_URL = "https://v3.football.api-sports.io";
+const API_URL =
+    "https://v3.football.api-sports.io";
+
 
 /* =========================================================
-   COMPÉTITIONS
+COMPÉTITIONS
 ========================================================= */
 
 const LEAGUES = {
-    "Ligue 1": { id: 61, country: "France" },
-    "Ligue 2": { id: 62, country: "France" },
-    "Premier League": { id: 39, country: "Angleterre" },
-    "La Liga": { id: 140, country: "Espagne" },
-    "Serie A": { id: 135, country: "Italie" },
-    "Bundesliga": { id: 78, country: "Allemagne" },
-    "Liga Portugal": { id: 94, country: "Portugal" },
-    "MLS": { id: 253, country: "USA" },
-    "Ligue des Champions": { id: 2, country: "Europe" },
-    "Europa League": { id: 3, country: "Europe" },
-    "Conference League": { id: 848, country: "Europe" }
+
+    "Ligue 1": {
+        id: 61,
+        country: "France"
+    },
+
+    "Ligue 2": {
+        id: 62,
+        country: "France"
+    },
+
+    "Premier League": {
+        id: 39,
+        country: "Angleterre"
+    },
+
+    "La Liga": {
+        id: 140,
+        country: "Espagne"
+    },
+
+    "Serie A": {
+        id: 135,
+        country: "Italie"
+    },
+
+    "Bundesliga": {
+        id: 78,
+        country: "Allemagne"
+    },
+
+    "Liga Portugal": {
+        id: 94,
+        country: "Portugal"
+    },
+
+    "MLS": {
+        id: 253,
+        country: "USA"
+    },
+
+    "Ligue des Champions": {
+        id: 2,
+        country: "Europe"
+    },
+
+    "Europa League": {
+        id: 3,
+        country: "Europe"
+    },
+
+    "Conference League": {
+        id: 848,
+        country: "Europe"
+    }
+
 };
 
+
 /* =========================================================
-   DONNÉES
+DONNÉES
 ========================================================= */
 
 let matches = [];
+
 let allMatches = [];
+
 let watchedMatches = {};
+
 let favoritePlayers = {};
+
 let officialManOfTheMatch = {};
 
 let selectedDate = new Date();
+
 selectedDate.setHours(12, 0, 0, 0);
 
 let selectedCompetition = null;
 
+
 /* =========================================================
-   LOCAL STORAGE
+LOCAL STORAGE
 ========================================================= */
 
 try {
+
     watchedMatches =
         JSON.parse(
-            localStorage.getItem("footScopeWatched")
+            localStorage.getItem(
+                "footScopeWatched"
+            )
         ) || {};
 
     favoritePlayers =
         JSON.parse(
-            localStorage.getItem("footScopeFavoritePlayers")
+            localStorage.getItem(
+                "footScopeFavoritePlayers"
+            )
         ) || {};
 
     officialManOfTheMatch =
         JSON.parse(
-            localStorage.getItem("footScopeOfficialManOfTheMatch")
+            localStorage.getItem(
+                "footScopeOfficialManOfTheMatch"
+            )
         ) || {};
 
 } catch (error) {
+
     watchedMatches = {};
+
     favoritePlayers = {};
+
     officialManOfTheMatch = {};
+
 }
 
+
 /* =========================================================
-   SAUVEGARDE
+SAUVEGARDE
 ========================================================= */
 
 function saveData() {
+
     localStorage.setItem(
         "footScopeWatched",
         JSON.stringify(watchedMatches)
@@ -98,18 +170,23 @@ function saveData() {
         "footScopeOfficialManOfTheMatch",
         JSON.stringify(officialManOfTheMatch)
     );
+
 }
 
+
 /* =========================================================
-   ÉCHAPPEMENT HTML
+ÉCHAPPEMENT HTML
 ========================================================= */
 
 function escapeHTML(value) {
+
     if (
         value === null ||
         value === undefined
     ) {
+
         return "";
+
     }
 
     return String(value)
@@ -118,30 +195,46 @@ function escapeHTML(value) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+
 }
 
+
 /* =========================================================
-   DATE
+DATE
 ========================================================= */
 
 function getDateString(date) {
-    const year = date.getFullYear();
+
+    const year =
+        date.getFullYear();
 
     const month =
-        String(date.getMonth() + 1)
-            .padStart(2, "0");
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
 
     const day =
-        String(date.getDate())
-            .padStart(2, "0");
+        String(
+            date.getDate()
+        ).padStart(2, "0");
 
-    return `${year}-${month}-${day}`;
+    return (
+        year +
+        "-" +
+        month +
+        "-" +
+        day
+    );
+
 }
 
+
 function formatDateFR(dateString) {
+
     const date =
         new Date(
-            dateString + "T12:00:00"
+            dateString +
+            "T12:00:00"
         );
 
     return date.toLocaleDateString(
@@ -153,13 +246,16 @@ function formatDateFR(dateString) {
             year: "numeric"
         }
     );
+
 }
 
+
 /* =========================================================
-   DATE AFFICHÉE
+DATE AFFICHÉE
 ========================================================= */
 
 function updateSelectedDateDisplay() {
+
     const dateElement =
         document.getElementById(
             "selectedDate"
@@ -171,7 +267,9 @@ function updateSelectedDateDisplay() {
 
     let dateText =
         formatDateFR(
-            getDateString(selectedDate)
+            getDateString(
+                selectedDate
+            )
         );
 
     dateText =
@@ -180,13 +278,16 @@ function updateSelectedDateDisplay() {
 
     dateElement.textContent =
         dateText;
+
 }
 
+
 /* =========================================================
-   HEURE
+HEURE
 ========================================================= */
 
 function formatTime(dateString) {
+
     return new Date(
         dateString
     ).toLocaleTimeString(
@@ -196,18 +297,22 @@ function formatTime(dateString) {
             minute: "2-digit"
         }
     );
+
 }
 
+
 /* =========================================================
-   STATUS
+STATUS
 ========================================================= */
 
 function getStatusText(status) {
+
     if (!status) {
         return "";
     }
 
     const statuses = {
+
         NS: "À venir",
         TBD: "À déterminer",
         "1H": "En direct",
@@ -221,6 +326,7 @@ function getStatusText(status) {
         PST: "Reporté",
         CANC: "Annulé",
         ABD: "Abandonné"
+
     };
 
     return (
@@ -228,13 +334,19 @@ function getStatusText(status) {
         status.long ||
         ""
     );
+
 }
 
+
 /* =========================================================
-   STATUS API
+STATUS API
 ========================================================= */
 
-function showApiStatus(message, type) {
+function showApiStatus(
+    message,
+    type
+) {
+
     const element =
         document.getElementById(
             "apiStatus"
@@ -253,29 +365,41 @@ function showApiStatus(message, type) {
     if (type) {
         element.classList.add(type);
     }
+
 }
 
+
 /* =========================================================
-   REQUÊTE API
+REQUÊTE API
 ========================================================= */
 
 async function apiRequest(endpoint) {
+
     const response =
         await fetch(
             API_URL + endpoint,
             {
                 method: "GET",
+
                 headers: {
-                    "x-apisports-key": API_KEY,
-                    "Accept": "application/json"
+
+                    "x-apisports-key":
+                        API_KEY,
+
+                    "Accept":
+                        "application/json"
+
                 }
             }
         );
 
     if (!response.ok) {
+
         throw new Error(
-            "HTTP " + response.status
+            "HTTP " +
+            response.status
         );
+
     }
 
     const data =
@@ -283,18 +407,26 @@ async function apiRequest(endpoint) {
 
     if (
         data.errors &&
-        Object.keys(data.errors).length > 0
+        Object.keys(
+            data.errors
+        ).length > 0
     ) {
+
         throw new Error(
-            JSON.stringify(data.errors)
+            JSON.stringify(
+                data.errors
+            )
         );
+
     }
 
     return data;
+
 }
 
+
 /* =========================================================
-   CHARGER LES MATCHS
+CHARGER LES MATCHS
 ========================================================= */
 
 async function loadMatches() {
@@ -304,15 +436,20 @@ async function loadMatches() {
         API_KEY ===
         "COLLE_TA_NOUVELLE_CLE_API_ICI"
     ) {
+
         showApiStatus(
             "⚠️ Mets ta clé API dans script.js.",
             "error"
         );
+
         return;
+
     }
 
     const date =
-        getDateString(selectedDate);
+        getDateString(
+            selectedDate
+        );
 
     selectedCompetition = null;
 
@@ -322,9 +459,11 @@ async function loadMatches() {
         );
 
     if (competitionMatches) {
+
         competitionMatches.classList.add(
             "hidden"
         );
+
     }
 
     const competitionsContainer =
@@ -333,8 +472,10 @@ async function loadMatches() {
         );
 
     if (competitionsContainer) {
+
         competitionsContainer.style.display =
             "grid";
+
     }
 
     showApiStatus(
@@ -345,17 +486,20 @@ async function loadMatches() {
     );
 
     if (competitionsContainer) {
+
         competitionsContainer.innerHTML =
             '<div class="loading">' +
             "⚽ Chargement des matchs..." +
             "</div>";
+
     }
 
     try {
 
         const data =
             await apiRequest(
-                "/fixtures?date=" + date
+                "/fixtures?date=" +
+                date
             );
 
         allMatches = [];
@@ -372,10 +516,13 @@ async function loadMatches() {
                     );
 
                 if (normalized) {
+
                     allMatches.push(
                         normalized
                     );
+
                 }
+
             }
         );
 
@@ -384,10 +531,12 @@ async function loadMatches() {
 
         matches.sort(
             function (a, b) {
+
                 return (
                     new Date(a.date) -
                     new Date(b.date)
                 );
+
             }
         );
 
@@ -415,8 +564,10 @@ async function loadMatches() {
                 "Free plans"
             )
         ) {
+
             message =
                 "⚠️ Cette date n'est pas accessible avec ton plan API-Football Free.";
+
         }
 
         showApiStatus(
@@ -428,19 +579,30 @@ async function loadMatches() {
 
             competitionsContainer.innerHTML =
                 '<div class="empty">' +
-                escapeHTML(message) +
+
+                escapeHTML(
+                    message
+                ) +
+
                 "<br><br>" +
+
                 "Date demandée : " +
+
                 escapeHTML(
                     formatDateFR(date)
                 ) +
+
                 "</div>";
+
         }
+
     }
+
 }
 
+
 /* =========================================================
-   NORMALISATION
+NORMALISATION
 ========================================================= */
 
 function normalizeFixture(fixture) {
@@ -451,159 +613,94 @@ function normalizeFixture(fixture) {
         !fixture.league ||
         !fixture.teams
     ) {
+
         return null;
+
     }
 
     const leagueId =
         fixture.league.id;
 
     const leagueExists =
-        Object.values(LEAGUES).some(
+        Object.values(
+            LEAGUES
+        ).some(
             function (league) {
+
                 return league.id === leagueId;
+
             }
         );
 
     if (!leagueExists) {
+
         return null;
+
     }
 
     return {
-        id: fixture.fixture.id,
 
-        date: fixture.fixture.date,
+        id:
+            fixture.fixture.id,
 
-        status: fixture.fixture.status,
+        date:
+            fixture.fixture.date,
 
-        competition: fixture.league.name,
+        status:
+            fixture.fixture.status,
 
-        leagueId: fixture.league.id,
+        competition:
+            fixture.league.name,
 
-        season: fixture.league.season,
+        leagueId:
+            fixture.league.id,
 
-        country: fixture.league.country,
+        season:
+            fixture.league.season,
 
-        leagueLogo: fixture.league.logo,
+        country:
+            fixture.league.country,
 
-        home: fixture.teams.home.name,
+        leagueLogo:
+            fixture.league.logo,
 
-        away: fixture.teams.away.name,
+        home:
+            fixture.teams.home.name,
 
-        homeId: fixture.teams.home.id,
+        away:
+            fixture.teams.away.name,
 
-        awayId: fixture.teams.away.id,
+        homeId:
+            fixture.teams.home.id,
 
-        homeLogo: fixture.teams.home.logo,
+        awayId:
+            fixture.teams.away.id,
 
-        awayLogo: fixture.teams.away.logo,
+        homeLogo:
+            fixture.teams.home.logo,
 
-        homeScore: fixture.goals.home,
+        awayLogo:
+            fixture.teams.away.logo,
 
-        awayScore: fixture.goals.away,
+        homeScore:
+            fixture.goals.home,
+
+        awayScore:
+            fixture.goals.away,
 
         stadium:
             fixture.fixture.venue &&
             fixture.fixture.venue.name
                 ? fixture.fixture.venue.name
                 : "Stade non renseigné"
+
     };
+
 }
 
-/* =========================================================
-   CRÉER UN SNAPSHOT DU MATCH
-   IMPORTANT POUR L'HISTORIQUE
-========================================================= */
-
-function createMatchSnapshot(match) {
-
-    if (!match) {
-        return null;
-    }
-
-    return {
-        id: match.id,
-        date: match.date,
-        status: match.status
-            ? {
-                short: match.status.short || "",
-                long: match.status.long || ""
-            }
-            : {},
-        competition: match.competition || "",
-        leagueId: match.leagueId || null,
-        season: match.season || null,
-        country: match.country || "",
-        leagueLogo: match.leagueLogo || "",
-
-        home: match.home || "",
-        away: match.away || "",
-
-        homeId: match.homeId || null,
-        awayId: match.awayId || null,
-
-        homeLogo: match.homeLogo || "",
-        awayLogo: match.awayLogo || "",
-
-        homeScore:
-            match.homeScore !== undefined
-                ? match.homeScore
-                : null,
-
-        awayScore:
-            match.awayScore !== undefined
-                ? match.awayScore
-                : null,
-
-        stadium:
-            match.stadium ||
-            "Stade non renseigné"
-    };
-}
 
 /* =========================================================
-   RÉCUPÉRER UN MATCH DEPUIS L'HISTORIQUE
-========================================================= */
-
-function getSavedMatch(item) {
-
-    if (!item) {
-        return null;
-    }
-
-    /*
-       Si le nouveau système a sauvegardé
-       toutes les informations du match.
-    */
-
-    if (item.matchData) {
-        return item.matchData;
-    }
-
-    /*
-       Compatibilité avec les anciennes données :
-       si le match est encore dans allMatches,
-       on peut récupérer ses informations.
-    */
-
-    const current =
-        allMatches.find(
-            function (match) {
-                return (
-                    match.id ===
-                    item.matchId
-                );
-            }
-        );
-
-    if (current) {
-        return current;
-    }
-
-    return null;
-}
-
-/* =========================================================
-   COMPÉTITIONS
+COMPÉTITIONS
 ========================================================= */
 
 function renderCompetitions() {
@@ -626,21 +723,28 @@ function renderCompetitions() {
         );
 
     if (competitionMatches) {
+
         competitionMatches.classList.add(
             "hidden"
         );
+
     }
 
     if (!allMatches.length) {
 
         container.innerHTML =
             '<div class="empty">' +
+
             "Aucun match trouvé pour cette date." +
+
             "<br><br>" +
+
             "Utilise les flèches pour changer de jour." +
+
             "</div>";
 
         return;
+
     }
 
     const groups = {};
@@ -651,11 +755,20 @@ function renderCompetitions() {
             if (!groups[match.leagueId]) {
 
                 groups[match.leagueId] = {
-                    name: match.competition,
-                    country: match.country,
-                    logo: match.leagueLogo,
+
+                    name:
+                        match.competition,
+
+                    country:
+                        match.country,
+
+                    logo:
+                        match.leagueLogo,
+
                     matches: []
+
                 };
+
             }
 
             groups[
@@ -663,26 +776,33 @@ function renderCompetitions() {
             ].matches.push(
                 match
             );
+
         }
     );
 
     const competitions =
-        Object.values(groups);
+        Object.values(
+            groups
+        );
 
     container.innerHTML =
         competitions
             .map(
                 function (competition) {
+
                     return createCompetitionCard(
                         competition
                     );
+
                 }
             )
             .join("");
+
 }
 
+
 /* =========================================================
-   CARTE COMPÉTITION
+CARTE COMPÉTITION
 ========================================================= */
 
 function createCompetitionCard(
@@ -701,7 +821,9 @@ function createCompetitionCard(
             : "🏆";
 
     return (
+
         '<div class="competition-card" ' +
+
         'onclick="openCompetition(' +
         competition.matches[0].leagueId +
         ')">' +
@@ -709,21 +831,28 @@ function createCompetitionCard(
         '<div class="competition-card-top">' +
 
         '<div class="competition-logo">' +
+
         logo +
+
         "</div>" +
 
         "<div>" +
 
         '<div class="competition-name">' +
+
         escapeHTML(
             competition.name
         ) +
+
         "</div>" +
 
         '<div class="competition-country">' +
+
         escapeHTML(
-            competition.country || ""
+            competition.country ||
+            ""
         ) +
+
         "</div>" +
 
         "</div>" +
@@ -731,25 +860,35 @@ function createCompetitionCard(
         "</div>" +
 
         '<div class="competition-count">' +
+
         "⚽ " +
+
         competition.matches.length +
+
         (
             competition.matches.length > 1
                 ? " matchs"
                 : " match"
         ) +
+
         " • Voir les matchs →" +
+
         "</div>" +
 
         "</div>"
+
     );
+
 }
 
+
 /* =========================================================
-   OUVRIR COMPÉTITION
+OUVRIR COMPÉTITION
 ========================================================= */
 
-function openCompetition(leagueId) {
+function openCompetition(
+    leagueId
+) {
 
     selectedCompetition =
         leagueId;
@@ -757,10 +896,12 @@ function openCompetition(leagueId) {
     const competitionMatches =
         allMatches.filter(
             function (match) {
+
                 return (
                     match.leagueId ===
                     leagueId
                 );
+
             }
         );
 
@@ -803,23 +944,30 @@ function openCompetition(leagueId) {
         competitionMatches
             .map(
                 function (match) {
+
                     return createMatchCard(
                         match
                     );
+
                 }
             )
             .join("");
+
 }
 
+
 /* =========================================================
-   RETOUR AUX COMPÉTITIONS
+RETOUR AUX COMPÉTITIONS
 ========================================================= */
 
-document
-    .getElementById(
+const backButton =
+    document.getElementById(
         "backToCompetitions"
-    )
-    .addEventListener(
+    );
+
+if (backButton) {
+
+    backButton.addEventListener(
         "click",
         function () {
 
@@ -840,11 +988,15 @@ document
                 )
                 .style.display =
                 "grid";
+
         }
     );
 
+}
+
+
 /* =========================================================
-   CARTE MATCH
+CARTE MATCH
 ========================================================= */
 
 function createMatchCard(match) {
@@ -868,15 +1020,14 @@ function createMatchCard(match) {
 
     if (
         match.homeScore !== null &&
-        match.homeScore !== undefined &&
-        match.awayScore !== null &&
-        match.awayScore !== undefined
+        match.homeScore !== undefined
     ) {
 
         score =
             match.homeScore +
             " - " +
             match.awayScore;
+
     }
 
     let favoriteHTML = "";
@@ -885,13 +1036,19 @@ function createMatchCard(match) {
 
         favoriteHTML =
             '<div class="favorite-box">' +
+
             "⭐ Joueur préféré : " +
+
             "<strong>" +
+
             escapeHTML(
                 favorite
             ) +
+
             "</strong>" +
+
             "</div>";
+
     }
 
     let officialHTML = "";
@@ -899,19 +1056,26 @@ function createMatchCard(match) {
     if (official) {
 
         officialHTML =
-            '<div class="favorite-box">' +
+            '<div class="official-motm-box">' +
+
             "🏆 Homme du match officiel : " +
+
             "<strong>" +
+
             escapeHTML(
                 official
             ) +
+
             "</strong>" +
+
             "</div>";
+
     }
 
     return (
 
         '<div class="match-card" ' +
+
         'onclick="openMatch(' +
         match.id +
         ')">' +
@@ -919,13 +1083,19 @@ function createMatchCard(match) {
         '<div class="match-header">' +
 
         '<span class="competition">' +
+
         escapeHTML(
             match.competition
         ) +
+
         "</span>" +
 
         "<span>" +
-        formatTime(match.date) +
+
+        formatTime(
+            match.date
+        ) +
+
         "</span>" +
 
         "</div>" +
@@ -935,11 +1105,15 @@ function createMatchCard(match) {
         '<div class="team">' +
 
         '<div class="team-logo">' +
+
         '<img src="' +
+
         escapeHTML(
             match.homeLogo
         ) +
+
         '" alt="">' +
+
         "</div>" +
 
         escapeHTML(
@@ -951,13 +1125,17 @@ function createMatchCard(match) {
         "<div>" +
 
         '<div class="score">' +
+
         score +
+
         "</div>" +
 
         '<div class="match-status">' +
+
         getStatusText(
             match.status
         ) +
+
         "</div>" +
 
         "</div>" +
@@ -965,11 +1143,15 @@ function createMatchCard(match) {
         '<div class="team">' +
 
         '<div class="team-logo">' +
+
         '<img src="' +
+
         escapeHTML(
             match.awayLogo
         ) +
+
         '" alt="">' +
+
         "</div>" +
 
         escapeHTML(
@@ -981,6 +1163,7 @@ function createMatchCard(match) {
         "</div>" +
 
         favoriteHTML +
+
         officialHTML +
 
         '<div class="match-footer">' +
@@ -992,8 +1175,11 @@ function createMatchCard(match) {
         ) +
 
         '<button class="watch-btn" ' +
+
         'onclick="event.stopPropagation(); openMatch(' +
+
         match.id +
+
         ')">' +
 
         (
@@ -1007,33 +1193,26 @@ function createMatchCard(match) {
         "</div>" +
 
         "</div>"
+
     );
+
 }
 
+
 /* =========================================================
-   OUVRIR MATCH
+OUVRIR MATCH
 ========================================================= */
 
 async function openMatch(id) {
 
-    let match =
+    const match =
         allMatches.find(
             function (item) {
+
                 return item.id === id;
+
             }
         );
-
-    /*
-       Si le match n'est plus dans allMatches,
-       on le récupère depuis l'historique.
-    */
-
-    if (!match && watchedMatches[id]) {
-        match =
-            getSavedMatch(
-                watchedMatches[id]
-            );
-    }
 
     if (!match) {
         return;
@@ -1044,20 +1223,10 @@ async function openMatch(id) {
 
     const favorite =
         favoritePlayers[id] ||
-        (
-            watched
-                ? watched.favoritePlayer
-                : ""
-        ) ||
         "";
 
     const official =
         officialManOfTheMatch[id] ||
-        (
-            watched
-                ? watched.officialManOfTheMatch
-                : ""
-        ) ||
         "";
 
     let rating =
@@ -1079,15 +1248,14 @@ async function openMatch(id) {
 
     if (
         match.homeScore !== null &&
-        match.homeScore !== undefined &&
-        match.awayScore !== null &&
-        match.awayScore !== undefined
+        match.homeScore !== undefined
     ) {
 
         score =
             match.homeScore +
             " - " +
             match.awayScore;
+
     }
 
     const content =
@@ -1098,9 +1266,11 @@ async function openMatch(id) {
     content.innerHTML =
 
         '<div class="competition">' +
+
         escapeHTML(
             match.competition
         ) +
+
         "</div>" +
 
         '<div class="modal-teams">' +
@@ -1108,9 +1278,11 @@ async function openMatch(id) {
         '<div class="modal-team">' +
 
         '<img src="' +
+
         escapeHTML(
             match.homeLogo
         ) +
+
         '" alt="">' +
 
         escapeHTML(
@@ -1122,15 +1294,23 @@ async function openMatch(id) {
         "<div>" +
 
         '<div class="modal-score">' +
+
         score +
+
         "</div>" +
 
         '<p class="match-status">' +
+
         getStatusText(
             match.status
         ) +
+
         " • " +
-        formatTime(match.date) +
+
+        formatTime(
+            match.date
+        ) +
+
         "</p>" +
 
         "</div>" +
@@ -1138,9 +1318,11 @@ async function openMatch(id) {
         '<div class="modal-team">' +
 
         '<img src="' +
+
         escapeHTML(
             match.awayLogo
         ) +
+
         '" alt="">' +
 
         escapeHTML(
@@ -1184,22 +1366,48 @@ async function openMatch(id) {
 
         "</div>" +
 
+        '<div class="info-row">' +
+
+        "<span>⚽ Buts</span>" +
+
+        "<strong>" +
+
+        (
+            match.homeScore !== null &&
+            match.awayScore !== null
+                ? (
+                    Number(match.homeScore) +
+                    Number(match.awayScore)
+                )
+                : "Non disponible"
+        ) +
+
+        "</strong>" +
+
+        "</div>" +
+
         "</div>" +
 
         '<h3 class="sub-title">' +
+
         "⭐ Mon joueur préféré" +
+
         "</h3>" +
 
         '<div class="form-group">' +
 
         "<label>" +
+
         "Choisis ton joueur préféré :" +
+
         "</label>" +
 
         '<div id="playerChoices" class="player-choice-grid">' +
 
         '<div class="loading">' +
+
         "⚽ Chargement des joueurs..." +
+
         "</div>" +
 
         "</div>" +
@@ -1207,35 +1415,53 @@ async function openMatch(id) {
         "</div>" +
 
         '<h3 class="sub-title">' +
+
         "🏆 Homme du match officiel" +
+
         "</h3>" +
 
         '<div id="officialManOfTheMatch" class="official-motm-modal">' +
 
         '<div class="loading">' +
+
         "🔎 Recherche de l'homme du match officiel..." +
+
         "</div>" +
 
         "</div>" +
 
         '<h3 class="sub-title">' +
+
         "Mon avis" +
+
         "</h3>" +
 
         '<div class="form-group">' +
 
         "<label>" +
+
         "Note du match /10" +
+
         "</label>" +
 
         '<input id="rating" ' +
+
         'class="form-input" ' +
+
         'type="number" ' +
+
         'min="0" ' +
+
         'max="10" ' +
+
         'step="0.1" ' +
+
         'value="' +
-        escapeHTML(rating) +
+
+        escapeHTML(
+            rating
+        ) +
+
         '">' +
 
         "</div>" +
@@ -1243,41 +1469,55 @@ async function openMatch(id) {
         '<div class="form-group">' +
 
         "<label>" +
+
         "Qualité du match" +
+
         "</label>" +
 
         '<select id="quality" class="form-select">' +
 
         '<option value="exceptionnel"' +
+
         (
-            quality === "exceptionnel"
+            quality ===
+            "exceptionnel"
                 ? " selected"
                 : ""
         ) +
+
         ">🔥 Exceptionnel</option>" +
 
         '<option value="très bon"' +
+
         (
-            quality === "très bon"
+            quality ===
+            "très bon"
                 ? " selected"
                 : ""
         ) +
+
         ">⭐ Très bon</option>" +
 
         '<option value="moyen"' +
+
         (
-            quality === "moyen"
+            quality ===
+            "moyen"
                 ? " selected"
                 : ""
         ) +
+
         ">😐 Moyen</option>" +
 
         '<option value="mauvais"' +
+
         (
-            quality === "mauvais"
+            quality ===
+            "mauvais"
                 ? " selected"
                 : ""
         ) +
+
         ">👎 Mauvais</option>" +
 
         "</select>" +
@@ -1287,20 +1527,31 @@ async function openMatch(id) {
         '<div class="form-group">' +
 
         "<label>" +
+
         "Commentaire" +
+
         "</label>" +
 
         '<textarea id="comment" ' +
+
         'class="form-textarea" ' +
+
         'placeholder="Ton avis sur le match...">' +
-        escapeHTML(comment) +
+
+        escapeHTML(
+            comment
+        ) +
+
         "</textarea>" +
 
         "</div>" +
 
         '<button class="primary-btn" ' +
+
         'onclick="saveMatch(' +
+
         match.id +
+
         ')">' +
 
         "💾 Enregistrer" +
@@ -1324,10 +1575,12 @@ async function openMatch(id) {
         match,
         official
     );
+
 }
 
+
 /* =========================================================
-   JOUEURS
+CHARGER LES JOUEURS DU MATCH
 ========================================================= */
 
 async function loadPlayersForMatch(
@@ -1399,9 +1652,12 @@ async function loadPlayersForMatch(
                                     ? item.statistics[0].games &&
                                       item.statistics[0].games.rating
                                     : null
+
                         });
+
                     }
                 );
+
             }
         );
 
@@ -1425,16 +1681,20 @@ async function loadPlayersForMatch(
                     uniquePlayers.push(
                         player
                     );
+
                 }
+
             }
         );
 
         uniquePlayers.sort(
             function (a, b) {
+
                 return a.name.localeCompare(
                     b.name,
                     "fr"
                 );
+
             }
         );
 
@@ -1442,10 +1702,17 @@ async function loadPlayersForMatch(
 
             container.innerHTML =
                 '<div class="empty">' +
+
                 "Aucun joueur disponible pour ce match." +
+
+                "<br><br>" +
+
+                "L'API ne fournit peut-être pas encore les joueurs pour cette rencontre." +
+
                 "</div>";
 
             return;
+
         }
 
         container.innerHTML =
@@ -1466,45 +1733,61 @@ async function loadPlayersForMatch(
 
                             ratingHTML =
                                 '<small style="margin-left:8px;color:#ffd54a">' +
+
                                 "⭐ " +
+
                                 escapeHTML(
                                     player.rating
                                 ) +
+
                                 "</small>";
+
                         }
 
                         return (
 
                             '<button type="button" ' +
+
                             'class="player-choice ' +
+
                             (
                                 selected
                                     ? "selected"
                                     : ""
                             ) +
+
                             '" ' +
+
                             'data-player="' +
+
                             escapeHTML(
                                 player.name
                             ) +
+
                             '" ' +
+
                             'onclick="selectPlayer(this)">' +
 
                             "⚽ " +
+
                             escapeHTML(
                                 player.name
                             ) +
 
                             '<small style="margin-left:auto;color:#7f899a">' +
+
                             escapeHTML(
                                 player.team
                             ) +
+
                             "</small>" +
 
                             ratingHTML +
 
                             "</button>"
+
                         );
+
                     }
                 )
                 .join("");
@@ -1518,13 +1801,22 @@ async function loadPlayersForMatch(
 
         container.innerHTML =
             '<div class="empty">' +
+
             "Impossible de charger la liste des joueurs." +
+
+            "<br><br>" +
+
+            "Vérifie que ton forfait API-Football autorise cette requête." +
+
             "</div>";
+
     }
+
 }
 
+
 /* =========================================================
-   HOMME DU MATCH OFFICIEL
+HOMME DU MATCH OFFICIEL
 ========================================================= */
 
 async function loadOfficialManOfTheMatch(
@@ -1597,10 +1889,14 @@ async function loadOfficialManOfTheMatch(
                                     teamData.team
                                         ? teamData.team.name
                                         : ""
+
                             };
+
                         }
+
                     }
                 );
+
             }
         );
 
@@ -1630,16 +1926,21 @@ async function loadOfficialManOfTheMatch(
                 "<div>" +
 
                 "<strong>" +
+
                 "🏆 " +
+
                 escapeHTML(
                     officialPlayer.name
                 ) +
+
                 "</strong>" +
 
                 "<small>" +
+
                 escapeHTML(
                     officialPlayer.team
                 ) +
+
                 "</small>" +
 
                 "</div>" +
@@ -1647,12 +1948,59 @@ async function loadOfficialManOfTheMatch(
                 "</div>";
 
             return;
+
+        }
+
+        /*
+         * Si l'API ne fournit plus l'information,
+         * on affiche quand même celle qui était
+         * sauvegardée auparavant.
+         */
+
+        if (savedOfficial) {
+
+            container.innerHTML =
+
+                '<div class="official-player">' +
+
+                "<div>" +
+
+                "<strong>" +
+
+                "🏆 " +
+
+                escapeHTML(
+                    savedOfficial
+                ) +
+
+                "</strong>" +
+
+                "<small>Enregistré précédemment</small>" +
+
+                "</div>" +
+
+                "</div>";
+
+            return;
+
         }
 
         container.innerHTML =
+
             '<div class="empty">' +
+
             "🏆 Homme du match officiel : " +
-            "<strong>information non disponible</strong>" +
+
+            "<strong>" +
+
+            "information non disponible" +
+
+            "</strong>" +
+
+            "<br><br>" +
+
+            "L'API-Football ne fournit pas cette information pour ce match." +
+
             "</div>";
 
     } catch (error) {
@@ -1662,16 +2010,61 @@ async function loadOfficialManOfTheMatch(
             error
         );
 
-        container.innerHTML =
-            '<div class="empty">' +
-            "🏆 Homme du match officiel : " +
-            "<strong>information non disponible</strong>" +
-            "</div>";
+        /*
+         * IMPORTANT :
+         * Si l'API ne fonctionne plus, on affiche
+         * l'ancien homme du match sauvegardé.
+         */
+
+        if (savedOfficial) {
+
+            container.innerHTML =
+
+                '<div class="official-player">' +
+
+                "<div>" +
+
+                "<strong>" +
+
+                "🏆 " +
+
+                escapeHTML(
+                    savedOfficial
+                ) +
+
+                "</strong>" +
+
+                "<small>Enregistré précédemment</small>" +
+
+                "</div>" +
+
+                "</div>";
+
+        } else {
+
+            container.innerHTML =
+
+                '<div class="empty">' +
+
+                "🏆 Homme du match officiel : " +
+
+                "<strong>" +
+
+                "information non disponible" +
+
+                "</strong>" +
+
+                "</div>";
+
+        }
+
     }
+
 }
 
+
 /* =========================================================
-   CHOISIR JOUEUR
+CHOISIR UN JOUEUR
 ========================================================= */
 
 function selectPlayer(button) {
@@ -1682,20 +2075,23 @@ function selectPlayer(button) {
         )
         .forEach(
             function (item) {
+
                 item.classList.remove(
                     "selected"
                 );
+
             }
         );
 
     button.classList.add(
         "selected"
     );
+
 }
 
+
 /* =========================================================
-   SAUVEGARDER MATCH
-   IMPORTANT : sauvegarde aussi le match complet
+SAUVEGARDER MATCH
 ========================================================= */
 
 function saveMatch(id) {
@@ -1736,42 +2132,8 @@ function saveMatch(id) {
         );
 
         return;
+
     }
-
-    /*
-       On récupère le match actuel.
-    */
-
-    let match =
-        allMatches.find(
-            function (item) {
-                return item.id === id;
-            }
-        );
-
-    /*
-       Si besoin, on récupère l'ancien
-       snapshot déjà enregistré.
-    */
-
-    if (!match && watchedMatches[id]) {
-        match =
-            getSavedMatch(
-                watchedMatches[id]
-            );
-    }
-
-    if (!match) {
-        alert(
-            "Impossible de retrouver ce match."
-        );
-        return;
-    }
-
-    const matchSnapshot =
-        createMatchSnapshot(
-            match
-        );
 
     const favorite =
         selectedPlayer
@@ -1786,6 +2148,7 @@ function saveMatch(id) {
     } else {
 
         delete favoritePlayers[id];
+
     }
 
     const officialElement =
@@ -1801,35 +2164,170 @@ function saveMatch(id) {
             officialElement.textContent
                 .replace("🏆", "")
                 .trim();
+
+    }
+
+    /*
+     * Si l'API n'est plus disponible mais
+     * qu'un homme du match était déjà enregistré,
+     * on le conserve.
+     */
+
+    if (!official) {
+
+        official =
+            officialManOfTheMatch[id] ||
+            "";
+
     }
 
     if (official) {
 
         officialManOfTheMatch[id] =
             official;
+
     }
 
     /*
-       SAUVEGARDE COMPLÈTE
-    */
+     * Récupération du match actuel.
+     */
+
+    const match =
+        allMatches.find(
+            function (item) {
+
+                return item.id === id;
+
+            }
+        );
+
+    /*
+     * IMPORTANT :
+     * On enregistre également les informations
+     * du match lui-même.
+     *
+     * Ainsi, même si l'API ne permet plus
+     * d'accéder au match plusieurs jours après,
+     * les informations nécessaires aux statistiques
+     * restent dans le navigateur.
+     */
+
+    let savedGoals = null;
+
+    if (
+        match &&
+        match.homeScore !== null &&
+        match.homeScore !== undefined &&
+        match.awayScore !== null &&
+        match.awayScore !== undefined
+    ) {
+
+        savedGoals =
+            Number(match.homeScore) +
+            Number(match.awayScore);
+
+    }
+
+    /*
+     * Si le match avait déjà été enregistré
+     * et que l'API ne donne plus le score,
+     * on conserve les anciens buts.
+     */
+
+    if (
+        savedGoals === null &&
+        watchedMatches[id] &&
+        watchedMatches[id].totalGoals !== undefined
+    ) {
+
+        savedGoals =
+            watchedMatches[id].totalGoals;
+
+    }
 
     watchedMatches[id] = {
 
-        matchId: id,
+        /*
+         * Identifiant du match
+         */
+
+        matchId:
+            id,
 
         /*
-           NOUVEAU :
-           Toutes les infos du match
-           restent disponibles même
-           plusieurs jours après.
-        */
+         * Informations du match conservées
+         */
 
-        matchData:
-            matchSnapshot,
+        home:
+            match
+                ? match.home
+                : (
+                    watchedMatches[id]
+                        ? watchedMatches[id].home
+                        : ""
+                ),
 
-        rating: rating,
+        away:
+            match
+                ? match.away
+                : (
+                    watchedMatches[id]
+                        ? watchedMatches[id].away
+                        : ""
+                ),
 
-        favoritePlayer: favorite,
+        competition:
+            match
+                ? match.competition
+                : (
+                    watchedMatches[id]
+                        ? watchedMatches[id].competition
+                        : ""
+                ),
+
+        matchDate:
+            match
+                ? match.date
+                : (
+                    watchedMatches[id]
+                        ? watchedMatches[id].matchDate
+                        : ""
+                ),
+
+        homeScore:
+            match &&
+            match.homeScore !== null &&
+            match.homeScore !== undefined
+                ? Number(match.homeScore)
+                : (
+                    watchedMatches[id]
+                        ? watchedMatches[id].homeScore
+                        : null
+                ),
+
+        awayScore:
+            match &&
+            match.awayScore !== null &&
+            match.awayScore !== undefined
+                ? Number(match.awayScore)
+                : (
+                    watchedMatches[id]
+                        ? watchedMatches[id].awayScore
+                        : null
+                ),
+
+        totalGoals:
+            savedGoals,
+
+        /*
+         * Avis personnel
+         */
+
+        rating:
+            rating,
+
+        favoritePlayer:
+            favorite,
 
         officialManOfTheMatch:
             official,
@@ -1845,6 +2343,7 @@ function saveMatch(id) {
             watchedMatches[id].watchedAt
                 ? watchedMatches[id].watchedAt
                 : new Date().toISOString()
+
     };
 
     saveData();
@@ -1858,10 +2357,12 @@ function saveMatch(id) {
     renderStats();
 
     renderAwards();
+
 }
 
+
 /* =========================================================
-   RENDRE MATCHS ACTUELS
+RENDRE LES MATCHS ACTUELS
 ========================================================= */
 
 function renderCurrentCompetition() {
@@ -1874,15 +2375,18 @@ function renderCurrentCompetition() {
         renderCompetitions();
 
         return;
+
     }
 
     openCompetition(
         selectedCompetition
     );
+
 }
 
+
 /* =========================================================
-   MODAL
+MODAL
 ========================================================= */
 
 function closeModal() {
@@ -1899,22 +2403,33 @@ function closeModal() {
     modal.classList.remove(
         "show"
     );
+
 }
 
-document
-    .getElementById(
+
+const closeModalButton =
+    document.getElementById(
         "closeModal"
-    )
-    .addEventListener(
+    );
+
+if (closeModalButton) {
+
+    closeModalButton.addEventListener(
         "click",
         closeModal
     );
 
-document
-    .getElementById(
+}
+
+
+const matchModal =
+    document.getElementById(
         "matchModal"
-    )
-    .addEventListener(
+    );
+
+if (matchModal) {
+
+    matchModal.addEventListener(
         "click",
         function (event) {
 
@@ -1922,13 +2437,19 @@ document
                 event.target.id ===
                 "matchModal"
             ) {
+
                 closeModal();
+
             }
+
         }
     );
 
+}
+
+
 /* =========================================================
-   NAVIGATION
+NAVIGATION
 ========================================================= */
 
 document
@@ -1955,6 +2476,7 @@ document
                                 section.classList.remove(
                                     "active"
                                 );
+
                             }
                         );
 
@@ -1968,6 +2490,7 @@ document
                         targetPage.classList.add(
                             "active"
                         );
+
                     }
 
                     document
@@ -1980,6 +2503,7 @@ document
                                 btn.classList.remove(
                                     "active"
                                 );
+
                             }
                         );
 
@@ -1991,36 +2515,48 @@ document
                         page ===
                         "history"
                     ) {
+
                         renderHistory();
+
                     }
 
                     if (
                         page ===
                         "stats"
                     ) {
+
                         renderStats();
+
                     }
 
                     if (
                         page ===
                         "awards"
                     ) {
+
                         renderAwards();
+
                     }
+
                 }
             );
+
         }
     );
 
+
 /* =========================================================
-   DATE PRÉCÉDENTE
+DATE PRÉCÉDENTE
 ========================================================= */
 
-document
-    .getElementById(
+const previousDay =
+    document.getElementById(
         "previousDay"
-    )
-    .addEventListener(
+    );
+
+if (previousDay) {
+
+    previousDay.addEventListener(
         "click",
         function () {
 
@@ -2031,18 +2567,25 @@ document
             updateSelectedDateDisplay();
 
             loadMatches();
+
         }
     );
 
+}
+
+
 /* =========================================================
-   DATE SUIVANTE
+DATE SUIVANTE
 ========================================================= */
 
-document
-    .getElementById(
+const nextDay =
+    document.getElementById(
         "nextDay"
-    )
-    .addEventListener(
+    );
+
+if (nextDay) {
+
+    nextDay.addEventListener(
         "click",
         function () {
 
@@ -2053,26 +2596,38 @@ document
             updateSelectedDateDisplay();
 
             loadMatches();
+
         }
     );
 
+}
+
+
 /* =========================================================
-   ACTUALISER
+ACTUALISER
 ========================================================= */
 
-document
-    .getElementById(
+const refreshBtn =
+    document.getElementById(
         "refreshBtn"
-    )
-    .addEventListener(
+    );
+
+if (refreshBtn) {
+
+    refreshBtn.addEventListener(
         "click",
         function () {
+
             loadMatches();
+
         }
     );
 
+}
+
+
 /* =========================================================
-   HISTORIQUE
+HISTORIQUE
 ========================================================= */
 
 function renderHistory() {
@@ -2086,146 +2641,323 @@ function renderHistory() {
         return;
     }
 
-    const search =
-        document.getElementById(
-            "searchInput"
-        );
-
-    const searchValue =
-        search
-            ? search.value
-                .trim()
-                .toLowerCase()
-            : "";
-
     const saved =
         Object.values(
             watchedMatches
-        )
-        .sort(
-            function (a, b) {
+        );
 
-                return new Date(
+    if (!saved.length) {
+
+        container.innerHTML =
+            '<div class="empty">' +
+
+            "Aucun match enregistré." +
+
+            "</div>";
+
+        return;
+
+    }
+
+    /*
+     * Les plus récents en premier.
+     */
+
+    saved.sort(
+        function (a, b) {
+
+            return (
+                new Date(
                     b.watchedAt || 0
                 ) -
                 new Date(
                     a.watchedAt || 0
-                );
-            }
-        );
+                )
+            );
 
-    let filtered =
-        saved.filter(
-            function (item) {
-
-                const match =
-                    getSavedMatch(
-                        item
-                    );
-
-                if (!searchValue) {
-                    return true;
-                }
-
-                if (!match) {
-                    return false;
-                }
-
-                const text =
-                    (
-                        match.home +
-                        " " +
-                        match.away +
-                        " " +
-                        match.competition
-                    )
-                    .toLowerCase();
-
-                return text.includes(
-                    searchValue
-                );
-            }
-        );
-
-    if (!filtered.length) {
-
-        container.innerHTML =
-            '<div class="empty">' +
-            (
-                saved.length
-                    ? "Aucun match ne correspond à ta recherche."
-                    : "Aucun match enregistré."
-            ) +
-            "</div>";
-
-        return;
-    }
+        }
+    );
 
     container.innerHTML =
-        filtered
+        saved
             .map(
                 function (item) {
 
+                    /*
+                     * On cherche le match dans les matchs
+                     * actuellement chargés.
+                     *
+                     * MAIS les données sauvegardées
+                     * dans localStorage sont prioritaires.
+                     */
+
                     const match =
-                        getSavedMatch(
-                            item
+                        allMatches.find(
+                            function (m) {
+
+                                return (
+                                    m.id ===
+                                    item.matchId
+                                );
+
+                            }
                         );
 
-                    if (!match) {
+                    const home =
+                        item.home ||
+                        (
+                            match
+                                ? match.home
+                                : ""
+                        ) ||
+                        "Équipe inconnue";
 
-                        return (
-                            '<div class="history-card">' +
-                            '<div class="history-main">' +
-                            "<strong>Match enregistré</strong>" +
-                            "<span>Les détails du match ne sont plus disponibles.</span>" +
-                            "</div>" +
-                            '<div class="rating">' +
-                            "⭐ " +
-                            Number(item.rating).toFixed(1) +
-                            "/10" +
-                            "</div>" +
-                            "</div>"
-                        );
-                    }
+                    const away =
+                        item.away ||
+                        (
+                            match
+                                ? match.away
+                                : ""
+                        ) ||
+                        "Équipe inconnue";
 
-                    let score = "-";
+                    const competition =
+                        item.competition ||
+                        (
+                            match
+                                ? match.competition
+                                : ""
+                        ) ||
+                        "Compétition inconnue";
+
+                    /*
+                     * Score conservé.
+                     */
+
+                    let scoreHTML = "";
 
                     if (
-                        match.homeScore !== null &&
-                        match.homeScore !== undefined &&
-                        match.awayScore !== null &&
-                        match.awayScore !== undefined
+                        item.homeScore !== null &&
+                        item.homeScore !== undefined &&
+                        item.awayScore !== null &&
+                        item.awayScore !== undefined
                     ) {
 
-                        score =
-                            match.homeScore +
+                        scoreHTML =
+                            '<div class="history-detail">' +
+
+                            '<span class="history-label">' +
+                            "⚽ Score" +
+                            "</span>" +
+
+                            "<strong>" +
+
+                            escapeHTML(
+                                item.homeScore
+                            ) +
+
                             " - " +
-                            match.awayScore;
+
+                            escapeHTML(
+                                item.awayScore
+                            ) +
+
+                            "</strong>" +
+
+                            "</div>";
+
+                    }
+
+                    /*
+                     * Nombre total de buts.
+                     */
+
+                    let goalsHTML = "";
+
+                    if (
+                        item.totalGoals !== null &&
+                        item.totalGoals !== undefined
+                    ) {
+
+                        goalsHTML =
+                            '<div class="history-detail">' +
+
+                            '<span class="history-label">' +
+                            "⚽ Buts vus" +
+                            "</span>" +
+
+                            "<strong>" +
+
+                            escapeHTML(
+                                item.totalGoals
+                            ) +
+
+                            "</strong>" +
+
+                            "</div>";
+
+                    }
+
+                    /*
+                     * Joueur préféré.
+                     */
+
+                    const favoriteHTML =
+                        '<div class="history-detail">' +
+
+                        '<span class="history-label">' +
+
+                        "⭐ Joueur préféré" +
+
+                        "</span>" +
+
+                        "<strong>" +
+
+                        (
+                            item.favoritePlayer
+                                ? escapeHTML(
+                                    item.favoritePlayer
+                                )
+                                : "Aucun"
+                        ) +
+
+                        "</strong>" +
+
+                        "</div>";
+
+                    /*
+                     * Homme du match.
+                     */
+
+                    const officialName =
+                        item.officialManOfTheMatch ||
+                        officialManOfTheMatch[
+                            item.matchId
+                        ] ||
+                        "";
+
+                    const officialHTML =
+                        '<div class="history-detail">' +
+
+                        '<span class="history-label">' +
+
+                        "🏆 Homme du match officiel" +
+
+                        "</span>" +
+
+                        "<strong>" +
+
+                        (
+                            officialName
+                                ? escapeHTML(
+                                    officialName
+                                )
+                                : "Information non disponible"
+                        ) +
+
+                        "</strong>" +
+
+                        "</div>";
+
+                    /*
+                     * Qualité.
+                     */
+
+                    const qualityHTML =
+                        '<div class="history-detail">' +
+
+                        '<span class="history-label">' +
+
+                        "🎬 Qualité du match" +
+
+                        "</span>" +
+
+                        "<strong>" +
+
+                        escapeHTML(
+                            item.quality ||
+                            "Non renseignée"
+                        ) +
+
+                        "</strong>" +
+
+                        "</div>";
+
+                    /*
+                     * Commentaire.
+                     */
+
+                    const commentHTML =
+                        item.comment
+                            ? (
+                                '<div class="history-detail">' +
+
+                                '<span class="history-label">' +
+
+                                "💬 Mon commentaire" +
+
+                                "</span>" +
+
+                                "<p>" +
+
+                                escapeHTML(
+                                    item.comment
+                                ) +
+
+                                "</p>" +
+
+                                "</div>"
+                            )
+                            : (
+                                '<div class="history-detail">' +
+
+                                '<span class="history-label">' +
+
+                                "💬 Mon commentaire" +
+
+                                "</span>" +
+
+                                "<span>Aucun commentaire</span>" +
+
+                                "</div>"
+                            );
+
+                    /*
+                     * Date d'enregistrement.
+                     */
+
+                    let watchedDate = "";
+
+                    if (
+                        item.watchedAt
+                    ) {
+
+                        watchedDate =
+                            new Date(
+                                item.watchedAt
+                            ).toLocaleDateString(
+                                "fr-FR",
+                                {
+                                    day: "numeric",
+                                    month: "long",
+                                    year: "numeric"
+                                }
+                            );
+
                     }
 
                     return (
 
-                        '<div class="history-card" ' +
-                        'onclick="openSavedMatch(' +
-                        item.matchId +
-                        ')">' +
+                        '<div class="history-card">' +
 
                         '<div class="history-main">' +
 
                         "<strong>" +
 
                         escapeHTML(
-                            match.home
-                        ) +
-
-                        " " +
-
-                        score +
-
-                        " " +
-
-                        escapeHTML(
-                            match.away
+                            home +
+                            " - " +
+                            away
                         ) +
 
                         "</strong>" +
@@ -2233,49 +2965,35 @@ function renderHistory() {
                         "<span>" +
 
                         escapeHTML(
-                            match.competition
-                        ) +
-
-                        " • " +
-
-                        escapeHTML(
-                            formatDateFR(
-                                match.date.substring(
-                                    0,
-                                    10
-                                )
-                            )
+                            competition
                         ) +
 
                         "</span>" +
 
                         (
-                            item.favoritePlayer
-                                ? "<span>⭐ " +
-                                  escapeHTML(
-                                      item.favoritePlayer
-                                  ) +
-                                  "</span>"
+                            watchedDate
+                                ? (
+                                    "<span>" +
+                                    "📅 Enregistré le " +
+                                    escapeHTML(
+                                        watchedDate
+                                    ) +
+                                    "</span>"
+                                )
                                 : ""
                         ) +
 
-                        (
-                            item.comment
-                                ? "<span>📝 " +
-                                  escapeHTML(
-                                      item.comment
-                                  ).substring(
-                                      0,
-                                      80
-                                  ) +
-                                  (
-                                      item.comment.length > 80
-                                          ? "..."
-                                          : ""
-                                  ) +
-                                  "</span>"
-                                : ""
-                        ) +
+                        scoreHTML +
+
+                        goalsHTML +
+
+                        favoriteHTML +
+
+                        officialHTML +
+
+                        qualityHTML +
+
+                        commentHTML +
 
                         "</div>" +
 
@@ -2283,68 +3001,29 @@ function renderHistory() {
 
                         "⭐ " +
 
-                        Number(
-                            item.rating
-                        ).toFixed(1) +
+                        escapeHTML(
+                            Number(
+                                item.rating || 0
+                            ).toFixed(1)
+                        ) +
 
                         "/10" +
 
                         "</div>" +
 
                         "</div>"
+
                     );
+
                 }
             )
             .join("");
+
 }
 
-/* =========================================================
-   OUVRIR UN MATCH DEPUIS L'HISTORIQUE
-========================================================= */
-
-function openSavedMatch(id) {
-
-    const saved =
-        watchedMatches[id];
-
-    if (!saved) {
-        return;
-    }
-
-    const match =
-        getSavedMatch(
-            saved
-        );
-
-    if (!match) {
-        return;
-    }
-
-    /*
-       On place temporairement le match
-       dans allMatches pour que openMatch()
-       puisse l'utiliser.
-    */
-
-    const alreadyExists =
-        allMatches.some(
-            function (item) {
-                return item.id === id;
-            }
-        );
-
-    if (!alreadyExists) {
-
-        allMatches.push(
-            match
-        );
-    }
-
-    openMatch(id);
-}
 
 /* =========================================================
-   STATISTIQUES
+STATISTIQUES
 ========================================================= */
 
 function renderStats() {
@@ -2367,91 +3046,125 @@ function renderStats() {
 
         statsContainer.innerHTML =
             '<div class="empty">' +
+
             "Regarde et note des matchs pour voir tes statistiques." +
+
             "</div>";
 
-        clearStatsSections();
+        const competitionStats =
+            document.getElementById(
+                "competitionStats"
+            );
+
+        const monthlyStats =
+            document.getElementById(
+                "monthlyStats"
+            );
+
+        const seasonStats =
+            document.getElementById(
+                "seasonStats"
+            );
+
+        if (competitionStats) {
+            competitionStats.innerHTML = "";
+        }
+
+        if (monthlyStats) {
+            monthlyStats.innerHTML = "";
+        }
+
+        if (seasonStats) {
+            seasonStats.innerHTML = "";
+        }
 
         return;
+
     }
 
     const ratings =
-        saved
-            .map(
-                function (item) {
-                    return Number(
-                        item.rating
-                    );
-                }
-            )
-            .filter(
-                function (rating) {
-                    return !isNaN(rating);
-                }
-            );
+        saved.map(
+            function (item) {
+
+                return Number(
+                    item.rating
+                );
+
+            }
+        );
 
     const totalRatings =
         ratings.reduce(
             function (a, b) {
+
                 return a + b;
+
             },
             0
         );
 
     const average =
-        ratings.length
-            ? totalRatings / ratings.length
-            : 0;
+        totalRatings /
+        ratings.length;
 
     const best =
-        ratings.length
-            ? Math.max(...ratings)
-            : 0;
+        Math.max(
+            ...ratings
+        );
 
     const worst =
-        ratings.length
-            ? Math.min(...ratings)
-            : 0;
+        Math.min(
+            ...ratings
+        );
 
     /*
-       ⚽ BUTS VUS
-       On utilise maintenant les données
-       sauvegardées avec chaque match.
-    */
+     * BUTS VUS
+     *
+     * On utilise totalGoals sauvegardé.
+     * Il n'est donc PAS nécessaire que l'API
+     * puisse encore retrouver le match.
+     */
 
     let totalGoals = 0;
 
     saved.forEach(
         function (item) {
 
-            const match =
-                getSavedMatch(
-                    item
-                );
-
-            if (!match) {
-                return;
-            }
-
-            const homeGoals =
-                Number(
-                    match.homeScore
-                );
-
-            const awayGoals =
-                Number(
-                    match.awayScore
-                );
-
             if (
-                !isNaN(homeGoals) &&
-                !isNaN(awayGoals)
+                item.totalGoals !== null &&
+                item.totalGoals !== undefined
             ) {
 
                 totalGoals +=
-                    homeGoals +
-                    awayGoals;
+                    Number(
+                        item.totalGoals
+                    );
+
+                return;
+
             }
+
+            /*
+             * Compatibilité avec les anciennes données.
+             */
+
+            if (
+                item.homeScore !== null &&
+                item.homeScore !== undefined &&
+                item.awayScore !== null &&
+                item.awayScore !== undefined
+            ) {
+
+                totalGoals +=
+                    Number(
+                        item.homeScore
+                    ) +
+                    Number(
+                        item.awayScore
+                    );
+
+            }
+
         }
     );
 
@@ -2498,228 +3211,11 @@ function renderStats() {
         saved
     );
 
-    renderRatedMatches(
-        saved
-    );
 }
 
-/* =========================================================
-   VIDER LES STATS
-========================================================= */
-
-function clearStatsSections() {
-
-    const competitionStats =
-        document.getElementById(
-            "competitionStats"
-        );
-
-    const monthlyStats =
-        document.getElementById(
-            "monthlyStats"
-        );
-
-    const seasonStats =
-        document.getElementById(
-            "seasonStats"
-        );
-
-    if (competitionStats) {
-        competitionStats.innerHTML = "";
-    }
-
-    if (monthlyStats) {
-        monthlyStats.innerHTML = "";
-    }
-
-    if (seasonStats) {
-        seasonStats.innerHTML = "";
-    }
-}
 
 /* =========================================================
-   MATCHS NOTÉS
-========================================================= */
-
-function renderRatedMatches(saved) {
-
-    /*
-       On utilise le titre existant dans index.html
-       et on ajoute automatiquement une section
-       juste après les statistiques principales.
-    */
-
-    const statsContainer =
-        document.getElementById(
-            "statsContainer"
-        );
-
-    if (!statsContainer) {
-        return;
-    }
-
-    let section =
-        document.getElementById(
-            "ratedMatchesSection"
-        );
-
-    if (!section) {
-
-        section =
-            document.createElement(
-                "div"
-            );
-
-        section.id =
-            "ratedMatchesSection";
-
-        statsContainer
-            .parentNode
-            .insertBefore(
-                section,
-                statsContainer
-                    .nextSibling
-            );
-    }
-
-    const sorted =
-        saved
-            .slice()
-            .sort(
-                function (a, b) {
-
-                    return (
-                        Number(b.rating) -
-                        Number(a.rating)
-                    );
-                }
-            );
-
-    section.innerHTML =
-
-        '<h3 class="block-title">' +
-        "⭐ Mes matchs notés" +
-        "</h3>" +
-
-        '<div class="history-container">' +
-
-        sorted
-            .map(
-                function (item) {
-
-                    const match =
-                        getSavedMatch(
-                            item
-                        );
-
-                    if (!match) {
-                        return "";
-                    }
-
-                    let score = "-";
-
-                    if (
-                        match.homeScore !== null &&
-                        match.homeScore !== undefined &&
-                        match.awayScore !== null &&
-                        match.awayScore !== undefined
-                    ) {
-
-                        score =
-                            match.homeScore +
-                            " - " +
-                            match.awayScore;
-                    }
-
-                    return (
-
-                        '<div class="history-card" ' +
-                        'onclick="openSavedMatch(' +
-                        item.matchId +
-                        ')">' +
-
-                        '<div class="history-main">' +
-
-                        "<strong>" +
-
-                        escapeHTML(
-                            match.home
-                        ) +
-
-                        " " +
-
-                        score +
-
-                        " " +
-
-                        escapeHTML(
-                            match.away
-                        ) +
-
-                        "</strong>" +
-
-                        "<span>" +
-
-                        escapeHTML(
-                            match.competition
-                        ) +
-
-                        " • " +
-
-                        escapeHTML(
-                            formatDateFR(
-                                match.date.substring(
-                                    0,
-                                    10
-                                )
-                            )
-                        ) +
-
-                        "</span>" +
-
-                        (
-                            item.comment
-                                ? "<span>📝 " +
-                                  escapeHTML(
-                                      item.comment
-                                  ).substring(
-                                      0,
-                                      70
-                                  ) +
-                                  (
-                                      item.comment.length > 70
-                                          ? "..."
-                                          : ""
-                                  ) +
-                                  "</span>"
-                                : ""
-                        ) +
-
-                        "</div>" +
-
-                        '<div class="rating">' +
-
-                        "⭐ " +
-
-                        Number(
-                            item.rating
-                        ).toFixed(1) +
-
-                        "/10" +
-
-                        "</div>" +
-
-                        "</div>"
-                    );
-                }
-            )
-            .join("") +
-
-        "</div>";
-}
-
-/* =========================================================
-   CRÉER STAT
+CRÉER STAT
 ========================================================= */
 
 function createStat(
@@ -2748,11 +3244,14 @@ function createStat(
         "</div>" +
 
         "</div>"
+
     );
+
 }
 
+
 /* =========================================================
-   STATS COMPÉTITIONS
+STATS COMPÉTITIONS
 ========================================================= */
 
 function renderCompetitionStats(
@@ -2774,24 +3273,40 @@ function renderCompetitionStats(
         function (item) {
 
             const match =
-                getSavedMatch(
-                    item
+                allMatches.find(
+                    function (m) {
+
+                        return (
+                            m.id ===
+                            item.matchId
+                        );
+
+                    }
                 );
 
-            if (!match) {
-                return;
-            }
+            /*
+             * On utilise les données sauvegardées
+             * si le match n'est plus dans l'API.
+             */
 
             const name =
-                match.competition ||
-                "Compétition inconnue";
+                item.competition ||
+                (
+                    match
+                        ? match.competition
+                        : "Compétition inconnue"
+                );
 
             if (!groups[name]) {
 
                 groups[name] = {
+
                     count: 0,
+
                     total: 0
+
                 };
+
             }
 
             groups[name].count++;
@@ -2799,7 +3314,8 @@ function renderCompetitionStats(
             groups[name].total +=
                 Number(
                     item.rating
-                ) || 0;
+                );
+
         }
     );
 
@@ -2812,10 +3328,13 @@ function renderCompetitionStats(
 
         container.innerHTML =
             '<div class="empty">' +
+
             "Pas encore de données." +
+
             "</div>";
 
         return;
+
     }
 
     container.innerHTML =
@@ -2828,35 +3347,53 @@ function renderCompetitionStats(
                         '<div class="competition-stat">' +
 
                         "<strong>" +
-                        escapeHTML(name) +
+
+                        escapeHTML(
+                            name
+                        ) +
+
                         "</strong>" +
 
                         '<div class="stat-line">' +
+
                         "<span>Matchs vus</span>" +
+
                         "<strong>" +
+
                         data.count +
+
                         "</strong>" +
+
                         "</div>" +
 
                         '<div class="stat-line">' +
+
                         "<span>Moyenne</span>" +
+
                         "<strong>" +
+
                         (
                             data.total /
                             data.count
                         ).toFixed(1) +
+
                         "/10</strong>" +
+
                         "</div>" +
 
                         "</div>"
+
                     );
+
                 }
             )
             .join("");
+
 }
 
+
 /* =========================================================
-   STATS MOIS
+STATS MOIS
 ========================================================= */
 
 function renderMonthlyStats(
@@ -2892,43 +3429,52 @@ function renderMonthlyStats(
                 );
 
             if (!groups[key]) {
+
                 groups[key] = 0;
+
             }
 
             groups[key]++;
+
         }
     );
 
     container.innerHTML =
-        Object.entries(groups)
-            .map(
-                function ([month, count]) {
+        Object.entries(
+            groups
+        )
+        .map(
+            function ([month, count]) {
 
-                    return (
+                return (
 
-                        '<div class="month-stat">' +
+                    '<div class="month-stat">' +
 
-                        escapeHTML(
-                            month
-                        ) +
+                    escapeHTML(
+                        month
+                    ) +
 
-                        " : " +
+                    " : " +
 
-                        "<strong>" +
+                    "<strong>" +
 
-                        count +
+                    count +
 
-                        " match(s)</strong>" +
+                    " match(s)</strong>" +
 
-                        "</div>"
-                    );
-                }
-            )
-            .join("");
+                    "</div>"
+
+                );
+
+            }
+        )
+        .join("");
+
 }
 
+
 /* =========================================================
-   STATS SAISONS
+STATS SAISONS
 ========================================================= */
 
 function renderSeasonStats(
@@ -2950,58 +3496,74 @@ function renderSeasonStats(
         function (item) {
 
             const match =
-                getSavedMatch(
-                    item
+                allMatches.find(
+                    function (m) {
+
+                        return (
+                            m.id ===
+                            item.matchId
+                        );
+
+                    }
                 );
 
-            if (!match) {
-                return;
-            }
-
             const season =
-                match.season ||
+                (
+                    match &&
+                    match.season
+                ) ||
+                item.season ||
                 "Inconnue";
 
             if (!groups[season]) {
+
                 groups[season] = 0;
+
             }
 
             groups[season]++;
+
         }
     );
 
     container.innerHTML =
-        Object.entries(groups)
-            .map(
-                function ([season, count]) {
+        Object.entries(
+            groups
+        )
+        .map(
+            function ([season, count]) {
 
-                    return (
+                return (
 
-                        '<div class="season-stat">' +
+                    '<div class="season-stat">' +
 
-                        "Saison " +
+                    "Saison " +
 
-                        escapeHTML(
-                            season
-                        ) +
+                    escapeHTML(
+                        season
+                    ) +
 
-                        " : " +
+                    " : " +
 
-                        "<strong>" +
+                    "<strong>" +
 
-                        count +
+                    count +
 
-                        " match(s)</strong>" +
+                    " match(s)</strong>" +
 
-                        "</div>"
-                    );
-                }
-            )
-            .join("");
+                    "</div>"
+
+                );
+
+            }
+        )
+        .join("");
+
 }
 
+
 /* =========================================================
-   PALMARÈS
+PALMARÈS
 ========================================================= */
 
 function renderAwards() {
@@ -3024,7 +3586,9 @@ function renderAwards() {
 
         container.innerHTML =
             '<div class="empty">' +
+
             "Ton palmarès apparaîtra ici après tes premiers matchs." +
+
             "</div>";
 
     } else {
@@ -3032,36 +3596,78 @@ function renderAwards() {
         const ratings =
             saved.map(
                 function (item) {
+
                     return Number(
                         item.rating
                     );
+
                 }
+            );
+
+        const totalGoals =
+            saved.reduce(
+                function (total, item) {
+
+                    return (
+                        total +
+                        Number(
+                            item.totalGoals || 0
+                        )
+                    );
+
+                },
+                0
             );
 
         container.innerHTML =
 
             '<div class="award-card">' +
+
             "🏆 Matchs regardés : " +
+
             "<strong>" +
+
             saved.length +
+
             "</strong>" +
+
             "</div>" +
 
             '<div class="award-card">' +
+
             "⭐ Meilleure note : " +
+
             "<strong>" +
+
             Math.max(
                 ...ratings
             ).toFixed(1) +
+
             "/10</strong>" +
+
+            "</div>" +
+
+            '<div class="award-card">' +
+
+            "⚽ Buts vus : " +
+
+            "<strong>" +
+
+            totalGoals +
+
+            "</strong>" +
+
             "</div>";
+
     }
 
     renderPlayersRanking();
+
 }
 
+
 /* =========================================================
-   JOUEURS PRÉFÉRÉS
+JOUEURS PRÉFÉRÉS
 ========================================================= */
 
 function renderPlayersRanking() {
@@ -3096,7 +3702,9 @@ function renderPlayersRanking() {
                         ] ||
                         0
                     ) + 1;
+
             }
+
         }
     );
 
@@ -3106,7 +3714,9 @@ function renderPlayersRanking() {
         )
         .sort(
             function (a, b) {
+
                 return b[1] - a[1];
+
             }
         );
 
@@ -3114,10 +3724,13 @@ function renderPlayersRanking() {
 
         container.innerHTML =
             '<div class="empty">' +
+
             "Tu n'as pas encore choisi de joueur préféré." +
+
             "</div>";
 
         return;
+
     }
 
     container.innerHTML =
@@ -3133,30 +3746,44 @@ function renderPlayersRanking() {
                         '<div class="player-card">' +
 
                         '<div class="player-number">' +
-                        (index + 1) +
+
+                        (
+                            index + 1
+                        ) +
+
                         "</div>" +
 
                         '<div class="player-info">' +
 
                         "<strong>" +
-                        escapeHTML(player) +
+
+                        escapeHTML(
+                            player
+                        ) +
+
                         "</strong>" +
 
                         "<span>" +
+
                         count +
+
                         " sélection(s)</span>" +
 
                         "</div>" +
 
                         "</div>"
+
                     );
+
                 }
             )
             .join("");
+
 }
 
+
 /* =========================================================
-   RECHERCHE HISTORIQUE
+RECHERCHE HISTORIQUE
 ========================================================= */
 
 const searchInput =
@@ -3170,73 +3797,21 @@ if (searchInput) {
         "input",
         function () {
 
-            renderHistory();
-        }
-    );
-}
-
-/* =========================================================
-   FILTRE NOTE
-========================================================= */
-
-const ratingFilter =
-    document.getElementById(
-        "ratingFilter"
-    );
-
-if (ratingFilter) {
-
-    ratingFilter.addEventListener(
-        "change",
-        function () {
+            /*
+             * Pour l'instant, on garde le
+             * comportement existant.
+             */
 
             renderHistory();
+
         }
     );
+
 }
 
-/* =========================================================
-   FILTRE COMPÉTITION
-========================================================= */
-
-const leagueFilter =
-    document.getElementById(
-        "leagueFilter"
-    );
-
-if (leagueFilter) {
-
-    leagueFilter.addEventListener(
-        "change",
-        function () {
-
-            renderHistory();
-        }
-    );
-}
 
 /* =========================================================
-   FILTRE SAISON
-========================================================= */
-
-const seasonFilter =
-    document.getElementById(
-        "seasonFilter"
-    );
-
-if (seasonFilter) {
-
-    seasonFilter.addEventListener(
-        "change",
-        function () {
-
-            renderHistory();
-        }
-    );
-}
-
-/* =========================================================
-   INITIALISATION
+INITIALISATION
 ========================================================= */
 
 updateSelectedDateDisplay();
