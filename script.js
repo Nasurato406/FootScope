@@ -1,10 +1,19 @@
 /* =========================================================
    FOOTSCOPE
    API-FOOTBALL
-   VERSION COUPES + SÉLECTIONS NATIONALES
+========================================================= */
+
+
+/* =========================================================
+   🔴 TA CLÉ API
 ========================================================= */
 
 const API_KEY = "25fd0757eec89ba850a53745eab92ab7";
+
+
+/* =========================================================
+   API
+========================================================= */
 
 const API_URL =
     "https://v3.football.api-sports.io";
@@ -16,8 +25,6 @@ const API_URL =
 
 const LEAGUES = {
 
-    /* 🇫🇷 FRANCE */
-
     "Ligue 1": {
         id: 61,
         country: "France"
@@ -26,6 +33,51 @@ const LEAGUES = {
     "Ligue 2": {
         id: 62,
         country: "France"
+    },
+
+    "Premier League": {
+        id: 39,
+        country: "Angleterre"
+    },
+
+    "La Liga": {
+        id: 140,
+        country: "Espagne"
+    },
+
+    "Serie A": {
+        id: 135,
+        country: "Italie"
+    },
+
+    "Bundesliga": {
+        id: 78,
+        country: "Allemagne"
+    },
+
+    "Liga Portugal": {
+        id: 94,
+        country: "Portugal"
+    },
+
+    "MLS": {
+        id: 253,
+        country: "USA"
+    },
+
+    "Ligue des Champions": {
+        id: 2,
+        country: "Europe"
+    },
+
+    "Europa League": {
+        id: 3,
+        country: "Europe"
+    },
+
+    "Conference League": {
+        id: 848,
+        country: "Europe"
     },
 
     "Coupe de France": {
@@ -38,35 +90,9 @@ const LEAGUES = {
         country: "France"
     },
 
-
-    /* 🏴 ANGLETERRE */
-
-    "Premier League": {
-        id: 39,
-        country: "Angleterre"
-    },
-
     "FA Cup": {
         id: 45,
         country: "Angleterre"
-    },
-
-    "League Cup": {
-        id: 48,
-        country: "Angleterre"
-    },
-
-    "Community Shield": {
-        id: 528,
-        country: "Angleterre"
-    },
-
-
-    /* 🇪🇸 ESPAGNE */
-
-    "La Liga": {
-        id: 140,
-        country: "Espagne"
     },
 
     "Copa del Rey": {
@@ -74,17 +100,9 @@ const LEAGUES = {
         country: "Espagne"
     },
 
-    "Supercoupe d'Espagne": {
+    "Super Coupe d'Espagne": {
         id: 556,
         country: "Espagne"
-    },
-
-
-    /* 🇮🇹 ITALIE */
-
-    "Serie A": {
-        id: 135,
-        country: "Italie"
     },
 
     "Coppa Italia": {
@@ -92,17 +110,9 @@ const LEAGUES = {
         country: "Italie"
     },
 
-    "Supercoppa Italiana": {
+    "Super Coupe d'Italie": {
         id: 547,
         country: "Italie"
-    },
-
-
-    /* 🇩🇪 ALLEMAGNE */
-
-    "Bundesliga": {
-        id: 78,
-        country: "Allemagne"
     },
 
     "DFB-Pokal": {
@@ -110,17 +120,9 @@ const LEAGUES = {
         country: "Allemagne"
     },
 
-    "Supercoupe d'Allemagne": {
+    "Super Coupe d'Allemagne": {
         id: 529,
         country: "Allemagne"
-    },
-
-
-    /* 🇵🇹 PORTUGAL */
-
-    "Liga Portugal": {
-        id: 94,
-        country: "Portugal"
     },
 
     "Taça de Portugal": {
@@ -138,73 +140,9 @@ const LEAGUES = {
         country: "Portugal"
     },
 
-
-    /* 🇺🇸 USA */
-
-    "MLS": {
-        id: 253,
-        country: "USA"
-    },
-
-
-    /* 🇪🇺 EUROPE */
-
-    "Ligue des Champions": {
-        id: 2,
-        country: "Europe"
-    },
-
-    "Europa League": {
-        id: 3,
-        country: "Europe"
-    },
-
-    "Conference League": {
-        id: 848,
-        country: "Europe"
-    },
-
-    "Supercoupe UEFA": {
+    "Super Coupe de l'UEFA": {
         id: 531,
         country: "Europe"
-    },
-
-
-    /* 🌍 SÉLECTIONS NATIONALES */
-
-    "Coupe du Monde": {
-        id: 1,
-        country: "International"
-    },
-
-    "Euro": {
-        id: 4,
-        country: "Europe"
-    },
-
-    "Ligue des Nations": {
-        id: 5,
-        country: "Europe"
-    },
-
-    "Copa América": {
-        id: 9,
-        country: "Amérique du Sud"
-    },
-
-    "CAN": {
-        id: 6,
-        country: "Afrique"
-    },
-
-    "Gold Cup": {
-        id: 22,
-        country: "Amérique du Nord"
-    },
-
-    "Coupe d'Asie": {
-        id: 7,
-        country: "Asie"
     }
 
 };
@@ -222,7 +160,7 @@ let watchedMatches = {};
 
 let favoritePlayers = {};
 
-let officialManOfMatch = {};
+let officialMOTM = {};
 
 let selectedDate = new Date();
 
@@ -256,7 +194,7 @@ try {
             )
         ) || {};
 
-    officialManOfMatch =
+    officialMOTM =
         JSON.parse(
             localStorage.getItem(
                 "footScopeOfficialMOTM"
@@ -269,7 +207,7 @@ try {
 
     favoritePlayers = {};
 
-    officialManOfMatch = {};
+    officialMOTM = {};
 
 }
 
@@ -297,7 +235,7 @@ function saveData() {
     localStorage.setItem(
         "footScopeOfficialMOTM",
         JSON.stringify(
-            officialManOfMatch
+            officialMOTM
         )
     );
 
@@ -305,7 +243,7 @@ function saveData() {
 
 
 /* =========================================================
-   ECHAPPEMENT HTML
+   ÉCHAPPEMENT HTML
 ========================================================= */
 
 function escapeHTML(value) {
@@ -320,27 +258,22 @@ function escapeHTML(value) {
     }
 
     return String(value)
-
         .replace(
             /&/g,
             "&amp;"
         )
-
         .replace(
             /</g,
             "&lt;"
         )
-
         .replace(
             />/g,
             "&gt;"
         )
-
         .replace(
             /"/g,
             "&quot;"
         )
-
         .replace(
             /'/g,
             "&#039;"
@@ -408,32 +341,39 @@ function formatDateFR(
 }
 
 
+/* =========================================================
+   DATE AFFICHÉE
+========================================================= */
+
 function updateSelectedDateDisplay() {
 
-    const element =
+    const dateElement =
         document.getElementById(
             "selectedDate"
         );
 
-    if (!element) {
+    if (!dateElement) {
 
         return;
 
     }
 
-    let text =
+    let dateText =
         formatDateFR(
             getDateString(
                 selectedDate
             )
         );
 
-    text =
-        text.charAt(0).toUpperCase() +
-        text.slice(1);
 
-    element.textContent =
-        text;
+    dateText =
+        dateText.charAt(0)
+        .toUpperCase() +
+        dateText.slice(1);
+
+
+    dateElement.textContent =
+        dateText;
 
 }
 
@@ -473,37 +413,25 @@ function getStatusText(
 
     }
 
+
     const statuses = {
 
         NS: "À venir",
-
         TBD: "À déterminer",
-
         "1H": "En direct",
-
         HT: "Mi-temps",
-
         "2H": "En direct",
-
         ET: "Prolongations",
-
         P: "Tirs au but",
-
         FT: "Terminé",
-
         AET: "Terminé",
-
         PEN: "Terminé",
-
         PST: "Reporté",
-
         CANC: "Annulé",
-
-        ABD: "Abandonné",
-
-        SUSP: "Suspendu"
+        ABD: "Abandonné"
 
     };
+
 
     return (
         statuses[
@@ -530,17 +458,21 @@ function showApiStatus(
             "apiStatus"
         );
 
+
     if (!element) {
 
         return;
 
     }
 
+
     element.textContent =
         message;
 
+
     element.className =
         "api-status";
+
 
     if (type) {
 
@@ -563,8 +495,7 @@ async function apiRequest(
 
     const response =
         await fetch(
-            API_URL +
-            endpoint,
+            API_URL + endpoint,
             {
                 method: "GET",
 
@@ -600,7 +531,7 @@ async function apiRequest(
         data.errors &&
         Object.keys(
             data.errors
-        ).length
+        ).length > 0
     ) {
 
         throw new Error(
@@ -618,13 +549,15 @@ async function apiRequest(
 
 
 /* =========================================================
-   CHARGEMENT DES MATCHS
+   CHARGER LES MATCHS
 ========================================================= */
 
 async function loadMatches() {
 
     if (
-        !API_KEY
+        !API_KEY ||
+        API_KEY ===
+        "COLLE_TA_NOUVELLE_CLE_API_ICI"
     ) {
 
         showApiStatus(
@@ -647,69 +580,67 @@ async function loadMatches() {
         null;
 
 
-    document
-        .getElementById(
+    const competitionMatches =
+        document.getElementById(
             "competitionMatches"
-        )
-        .classList.add(
-            "hidden"
         );
 
 
-    document
-        .getElementById(
-            "competitionsContainer"
-        )
-        .style.display =
-        "grid";
-
-
-    const container =
+    const competitionsContainer =
         document.getElementById(
             "competitionsContainer"
         );
 
 
-    container.innerHTML =
-        '<div class="loading">' +
-        "⚽ Chargement des matchs..." +
-        "</div>";
+    if (competitionMatches) {
+
+        competitionMatches.classList.add(
+            "hidden"
+        );
+
+    }
+
+
+    if (competitionsContainer) {
+
+        competitionsContainer.style.display =
+            "grid";
+
+    }
 
 
     showApiStatus(
-        "⏳ Recherche des matchs du " +
+        "⏳ Chargement des matchs du " +
         formatDateFR(date) +
         "...",
         ""
     );
 
 
-    try {
+    if (competitionsContainer) {
 
-        /*
-         * IMPORTANT :
-         *
-         * Une seule requête récupère
-         * les matchs de la date.
-         *
-         * Ensuite FootScope filtre
-         * uniquement les compétitions
-         * présentes dans LEAGUES.
-         */
+        competitionsContainer.innerHTML =
+            '<div class="loading">' +
+            "⚽ Chargement des matchs..." +
+            "</div>";
+
+    }
+
+
+    try {
 
         const data =
             await apiRequest(
                 "/fixtures?date=" +
-                date +
-                "&timezone=Europe%2FParis"
+                date
             );
+
+
+        allMatches = [];
 
 
         const fixtures =
             data.response || [];
-
-
-        allMatches = [];
 
 
         fixtures.forEach(
@@ -719,6 +650,7 @@ async function loadMatches() {
                     normalizeFixture(
                         fixture
                     );
+
 
                 if (normalized) {
 
@@ -732,24 +664,20 @@ async function loadMatches() {
         );
 
 
-        allMatches.sort(
+        matches =
+            allMatches.slice();
+
+
+        matches.sort(
             function (a, b) {
 
                 return (
-                    new Date(
-                        a.date
-                    ) -
-                    new Date(
-                        b.date
-                    )
+                    new Date(a.date) -
+                    new Date(b.date)
                 );
 
             }
         );
-
-
-        matches =
-            allMatches.slice();
 
 
         showApiStatus(
@@ -770,26 +698,44 @@ async function loadMatches() {
         );
 
 
+        let message =
+            "❌ Impossible de charger les matchs.";
+
+
+        if (
+            error.message &&
+            error.message.includes(
+                "Free plans"
+            )
+        ) {
+
+            message =
+                "⚠️ Cette date n'est pas accessible avec ton plan API-Football Free.";
+
+        }
+
+
         showApiStatus(
-            "❌ Impossible de charger les matchs.",
+            message,
             "error"
         );
 
 
-        container.innerHTML =
-            '<div class="empty">' +
+        if (competitionsContainer) {
 
-            "❌ Impossible de charger les matchs." +
+            competitionsContainer.innerHTML =
+                '<div class="empty">' +
+                escapeHTML(
+                    message
+                ) +
+                "<br><br>" +
+                "Date demandée : " +
+                escapeHTML(
+                    formatDateFR(date)
+                ) +
+                "</div>";
 
-            "<br><br>" +
-
-            "Date : " +
-
-            escapeHTML(
-                formatDateFR(date)
-            ) +
-
-            "</div>";
+        }
 
     }
 
@@ -820,18 +766,11 @@ function normalizeFixture(
         fixture.league.id;
 
 
-    /*
-     * On garde uniquement
-     * les compétitions voulues.
-     */
-
-    const leagueEntry =
-        Object.entries(
+    const leagueExists =
+        Object.values(
             LEAGUES
-        ).find(
-            function (
-                [name, league]
-            ) {
+        ).some(
+            function (league) {
 
                 return (
                     league.id ===
@@ -842,19 +781,11 @@ function normalizeFixture(
         );
 
 
-    if (!leagueEntry) {
+    if (!leagueExists) {
 
         return null;
 
     }
-
-
-    const competitionName =
-        leagueEntry[0];
-
-
-    const competitionInfo =
-        leagueEntry[1];
 
 
     return {
@@ -869,16 +800,16 @@ function normalizeFixture(
             fixture.fixture.status,
 
         competition:
-            competitionName,
+            fixture.league.name,
 
         leagueId:
-            leagueId,
+            fixture.league.id,
 
         season:
             fixture.league.season,
 
         country:
-            competitionInfo.country,
+            fixture.league.country,
 
         leagueLogo:
             fixture.league.logo,
@@ -930,32 +861,39 @@ function renderCompetitions() {
         );
 
 
+    if (!container) {
+
+        return;
+
+    }
+
+
     container.style.display =
         "grid";
 
 
-    document
-        .getElementById(
+    const competitionMatches =
+        document.getElementById(
             "competitionMatches"
-        )
-        .classList.add(
-            "hidden"
         );
 
 
-    if (
-        !allMatches.length
-    ) {
+    if (competitionMatches) {
+
+        competitionMatches.classList.add(
+            "hidden"
+        );
+
+    }
+
+
+    if (!allMatches.length) {
 
         container.innerHTML =
             '<div class="empty">' +
-
-            "Aucun match de tes compétitions pour cette date." +
-
+            "Aucun match trouvé pour cette date." +
             "<br><br>" +
-
             "Utilise les flèches pour changer de jour." +
-
             "</div>";
 
         return;
@@ -969,15 +907,9 @@ function renderCompetitions() {
     allMatches.forEach(
         function (match) {
 
-            if (
-                !groups[
-                    match.leagueId
-                ]
-            ) {
+            if (!groups[match.leagueId]) {
 
-                groups[
-                    match.leagueId
-                ] = {
+                groups[match.leagueId] = {
 
                     name:
                         match.competition,
@@ -1014,9 +946,7 @@ function renderCompetitions() {
     container.innerHTML =
         competitions
             .map(
-                function (
-                    competition
-                ) {
+                function (competition) {
 
                     return createCompetitionCard(
                         competition
@@ -1039,13 +969,13 @@ function createCompetitionCard(
 
     const logo =
         competition.logo
-
-            ? '<img src="' +
-              escapeHTML(
-                  competition.logo
-              ) +
-              '" alt="">'
-
+            ? (
+                '<img src="' +
+                escapeHTML(
+                    competition.logo
+                ) +
+                '" alt="">'
+            )
             : "🏆";
 
 
@@ -1068,19 +998,16 @@ function createCompetitionCard(
         "<div>" +
 
         '<div class="competition-name">' +
-
         escapeHTML(
             competition.name
         ) +
-
         "</div>" +
 
         '<div class="competition-country">' +
-
         escapeHTML(
-            competition.country
+            competition.country ||
+            ""
         ) +
-
         "</div>" +
 
         "</div>" +
@@ -1135,9 +1062,7 @@ function openCompetition(
         );
 
 
-    if (
-        !competitionMatches.length
-    ) {
+    if (!competitionMatches.length) {
 
         return;
 
@@ -1148,36 +1073,61 @@ function openCompetition(
         competitionMatches[0];
 
 
-    document
-        .getElementById(
+    const competitionsContainer =
+        document.getElementById(
             "competitionsContainer"
-        )
-        .style.display =
-        "none";
-
-
-    document
-        .getElementById(
-            "competitionMatches"
-        )
-        .classList.remove(
-            "hidden"
         );
 
 
-    document
-        .getElementById(
+    if (competitionsContainer) {
+
+        competitionsContainer.style.display =
+            "none";
+
+    }
+
+
+    const competitionPage =
+        document.getElementById(
+            "competitionMatches"
+        );
+
+
+    if (competitionPage) {
+
+        competitionPage.classList.remove(
+            "hidden"
+        );
+
+    }
+
+
+    const title =
+        document.getElementById(
             "selectedCompetitionTitle"
-        )
-        .textContent =
-        "🏆 " +
-        competition.competition;
+        );
+
+
+    if (title) {
+
+        title.textContent =
+            "🏆 " +
+            competition.competition;
+
+    }
 
 
     const container =
         document.getElementById(
             "matchesContainer"
         );
+
+
+    if (!container) {
+
+        return;
+
+    }
 
 
     container.innerHTML =
@@ -1194,43 +1144,92 @@ function openCompetition(
             .join("");
 
 }
+
+
 /* =========================================================
    RETOUR AUX COMPÉTITIONS
 ========================================================= */
 
-const backButton =
+const backToCompetitions =
     document.getElementById(
         "backToCompetitions"
     );
 
-if (backButton) {
 
-    backButton.addEventListener(
+if (backToCompetitions) {
+
+    backToCompetitions.addEventListener(
         "click",
         function () {
 
             selectedCompetition =
                 null;
 
-            document
-                .getElementById(
+
+            const competitionMatches =
+                document.getElementById(
                     "competitionMatches"
-                )
-                .classList.add(
+                );
+
+
+            if (competitionMatches) {
+
+                competitionMatches.classList.add(
                     "hidden"
                 );
 
-            document
-                .getElementById(
+            }
+
+
+            const competitionsContainer =
+                document.getElementById(
                     "competitionsContainer"
-                )
-                .style.removeProperty(
-                    "display"
                 );
 
-            renderCompetitions();
+
+            if (competitionsContainer) {
+
+                competitionsContainer.style.display =
+                    "grid";
+
+            }
 
         }
+    );
+
+}
+
+
+/* =========================================================
+   TEXTE PROGRESSION
+========================================================= */
+
+function getWatchProgressLabel(
+    progress
+) {
+
+    const labels = {
+
+        "22":
+            "22e minute",
+
+        "45":
+            "Mi-temps",
+
+        "72":
+            "72e minute",
+
+        "90":
+            "Match terminé"
+
+    };
+
+
+    return (
+        labels[
+            String(progress)
+        ] ||
+        "Non renseigné"
     );
 
 }
@@ -1240,30 +1239,28 @@ if (backButton) {
    CARTE MATCH
 ========================================================= */
 
-function createMatchCard(match) {
+function createMatchCard(
+    match
+) {
 
     const watched =
         watchedMatches[
             match.id
         ];
 
+
     const favorite =
         favoritePlayers[
             match.id
         ] || "";
 
-    const motm =
-        officialManOfMatch[
-            match.id
-        ] || "";
 
     let score = "-";
 
+
     if (
         match.homeScore !== null &&
-        match.homeScore !== undefined &&
-        match.awayScore !== null &&
-        match.awayScore !== undefined
+        match.homeScore !== undefined
     ) {
 
         score =
@@ -1275,6 +1272,7 @@ function createMatchCard(match) {
 
 
     let favoriteHTML = "";
+
 
     if (favorite) {
 
@@ -1297,23 +1295,37 @@ function createMatchCard(match) {
     }
 
 
-    let motmHTML = "";
+    let progressHTML = "";
 
-    if (motm) {
 
-        motmHTML =
+    if (
+        watched &&
+        watched.watchProgress
+    ) {
 
-            '<div class="motm-box">' +
+        progressHTML =
 
-            "🏅 Homme du match : " +
+            '<div class="favorite-box">' +
+
+            "⏱️ Vu jusqu'à : " +
 
             "<strong>" +
 
             escapeHTML(
-                motm
+                getWatchProgressLabel(
+                    watched.watchProgress
+                )
             ) +
 
             "</strong>" +
+
+            (
+                watched.goalsSeen !== undefined
+                    ? " • ⚽ " +
+                      watched.goalsSeen +
+                      " but(s) vu(s)"
+                    : ""
+            ) +
 
             "</div>";
 
@@ -1339,6 +1351,7 @@ function createMatchCard(match) {
 
         "</span>" +
 
+
         "<span>" +
 
         formatTime(
@@ -1346,6 +1359,7 @@ function createMatchCard(match) {
         ) +
 
         "</span>" +
+
 
         "</div>" +
 
@@ -1358,11 +1372,9 @@ function createMatchCard(match) {
         '<div class="team-logo">' +
 
         '<img src="' +
-
         escapeHTML(
             match.homeLogo
         ) +
-
         '" alt="">' +
 
         "</div>" +
@@ -1382,6 +1394,7 @@ function createMatchCard(match) {
 
         "</div>" +
 
+
         '<div class="match-status">' +
 
         getStatusText(
@@ -1389,6 +1402,7 @@ function createMatchCard(match) {
         ) +
 
         "</div>" +
+
 
         "</div>" +
 
@@ -1398,11 +1412,9 @@ function createMatchCard(match) {
         '<div class="team-logo">' +
 
         '<img src="' +
-
         escapeHTML(
             match.awayLogo
         ) +
-
         '" alt="">' +
 
         "</div>" +
@@ -1419,31 +1431,26 @@ function createMatchCard(match) {
 
         favoriteHTML +
 
-        motmHTML +
+
+        progressHTML +
 
 
         '<div class="match-footer">' +
 
+
         (
             watched
-
-                ? '<span class="watched">' +
-                  "✓ Match enregistré" +
-                  "</span>"
-
-                : '<span class="match-status">' +
-                  "Pas encore enregistré" +
-                  "</span>"
+                ? '<span class="watched">✓ Match enregistré</span>'
+                : '<span class="match-status">Pas encore enregistré</span>'
         ) +
 
 
         '<button class="watch-btn" ' +
 
         'onclick="event.stopPropagation(); openMatch(' +
-
         match.id +
-
         ')">' +
+
 
         (
             watched
@@ -1451,7 +1458,9 @@ function createMatchCard(match) {
                 : "J'ai regardé"
         ) +
 
+
         "</button>" +
+
 
         "</div>" +
 
@@ -1464,10 +1473,12 @@ function createMatchCard(match) {
 
 
 /* =========================================================
-   OUVRIR UN MATCH
+   OUVRIR MATCH
 ========================================================= */
 
-function openMatch(id) {
+async function openMatch(
+    id
+) {
 
     const match =
         allMatches.find(
@@ -1498,7 +1509,7 @@ function openMatch(id) {
 
 
     const motm =
-        officialManOfMatch[id] ||
+        officialMOTM[id] ||
         "";
 
 
@@ -1520,14 +1531,21 @@ function openMatch(id) {
             : "";
 
 
+    let watchProgress =
+        watched &&
+        watched.watchProgress
+            ? String(
+                watched.watchProgress
+            )
+            : "90";
+
+
     let score = "-";
 
 
     if (
         match.homeScore !== null &&
-        match.homeScore !== undefined &&
-        match.awayScore !== null &&
-        match.awayScore !== undefined
+        match.homeScore !== undefined
     ) {
 
         score =
@@ -1552,7 +1570,6 @@ function openMatch(id) {
 
 
     content.innerHTML =
-
 
         '<div class="competition">' +
 
@@ -1585,11 +1602,13 @@ function openMatch(id) {
 
         "<div>" +
 
+
         '<div class="modal-score">' +
 
         score +
 
         "</div>" +
+
 
         '<p class="match-status">' +
 
@@ -1604,6 +1623,7 @@ function openMatch(id) {
         ) +
 
         "</p>" +
+
 
         "</div>" +
 
@@ -1667,51 +1687,82 @@ function openMatch(id) {
         "</div>" +
 
 
-        /* =================================================
-           HOMME DU MATCH
-        ================================================= */
-
         '<h3 class="sub-title">' +
 
-        "🏅 Homme du match" +
+        "⏱️ Jusqu'où as-tu regardé ?" +
 
         "</h3>" +
 
 
-        '<div id="officialMotm" class="motm-container">' +
+        '<div class="form-group">' +
+
+
+        '<label>' +
+
+        "Sélectionne le moment où tu as arrêté de regarder :" +
+
+        "</label>" +
+
+
+        '<select id="watchProgress" class="form-select">' +
+
+
+        '<option value="22"' +
 
         (
-            motm
-
-                ? '<div class="motm-box">' +
-                  "🏅 " +
-                  "<strong>" +
-                  escapeHTML(
-                      motm
-                  ) +
-                  "</strong>" +
-                  "</div>"
-
-                : '<div class="loading">' +
-                  "⏳ Recherche des performances..." +
-                  "</div>"
+            watchProgress === "22"
+                ? " selected"
+                : ""
         ) +
+
+        ">⏱️ 22e minute</option>" +
+
+
+        '<option value="45"' +
+
+        (
+            watchProgress === "45"
+                ? " selected"
+                : ""
+        ) +
+
+        ">⏱️ Mi-temps (45e)</option>" +
+
+
+        '<option value="72"' +
+
+        (
+            watchProgress === "72"
+                ? " selected"
+                : ""
+        ) +
+
+        ">⏱️ 72e minute</option>" +
+
+
+        '<option value="90"' +
+
+        (
+            watchProgress === "90"
+                ? " selected"
+                : ""
+        ) +
+
+        ">🏁 Match terminé</option>" +
+
+
+        "</select>" +
+
+
+        '<div id="goalsPreview" class="favorite-box" style="margin-top:10px;">' +
+
+        "⚽ Les buts vus seront calculés automatiquement." +
 
         "</div>" +
 
 
-        '<p class="motm-note">' +
+        "</div>" +
 
-        "L'API fournit les performances et notes des joueurs. " +
-
-        "Lorsqu'un homme du match officiel est identifié par la donnée disponible, il est affiché ici." +
-
-        "</p>" +
-
-
-        /* =================================================
-           JOUEUR PRÉFÉRÉ
-        ================================================= */
 
         '<h3 class="sub-title">' +
 
@@ -1722,6 +1773,7 @@ function openMatch(id) {
 
         '<div class="form-group">' +
 
+
         "<label>" +
 
         "Choisis ton joueur préféré :" +
@@ -1731,20 +1783,38 @@ function openMatch(id) {
 
         '<div id="playerChoices" class="player-choice-grid">' +
 
+
         '<div class="loading">' +
 
         "⚽ Chargement des joueurs..." +
 
         "</div>" +
 
-        "</div>" +
 
         "</div>" +
 
 
-        /* =================================================
-           AVIS
-        ================================================= */
+        "</div>" +
+
+
+        '<h3 class="sub-title">' +
+
+        "🏅 Homme du match officiel" +
+
+        "</h3>" +
+
+
+        '<div id="officialMOTMBox" class="favorite-box">' +
+
+        (
+            motm
+                ? "🏅 " +
+                  escapeHTML(motm)
+                : "⏳ Recherche de l'homme du match officiel..."
+        ) +
+
+        "</div>" +
+
 
         '<h3 class="sub-title">' +
 
@@ -1754,6 +1824,7 @@ function openMatch(id) {
 
 
         '<div class="form-group">' +
+
 
         "<label>" +
 
@@ -1782,10 +1853,12 @@ function openMatch(id) {
 
         '">' +
 
+
         "</div>" +
 
 
         '<div class="form-group">' +
+
 
         "<label>" +
 
@@ -1847,10 +1920,12 @@ function openMatch(id) {
 
         "</select>" +
 
+
         "</div>" +
 
 
         '<div class="form-group">' +
+
 
         "<label>" +
 
@@ -1865,11 +1940,14 @@ function openMatch(id) {
 
         'placeholder="Ton avis sur le match...">' +
 
+
         escapeHTML(
             comment
         ) +
 
+
         "</textarea>" +
+
 
         "</div>" +
 
@@ -1877,12 +1955,12 @@ function openMatch(id) {
         '<button class="primary-btn" ' +
 
         'onclick="saveMatch(' +
-
         match.id +
-
         ')">' +
 
+
         "💾 Enregistrer" +
+
 
         "</button>";
 
@@ -1896,10 +1974,6 @@ function openMatch(id) {
         );
 
 
-    /*
-     * Charge les joueurs des deux équipes.
-     */
-
     loadPlayersForMatch(
         match,
         favorite
@@ -1907,19 +1981,46 @@ function openMatch(id) {
 
 
     /*
-     * Charge les performances
-     * du match terminé.
+     * On charge les informations
+     * complémentaires du match.
      */
 
-    loadOfficialManOfMatch(
+    loadOfficialMOTM(
         match
     );
+
+
+    updateGoalsPreview(
+        match
+    );
+
+
+    const progressSelect =
+        document.getElementById(
+            "watchProgress"
+        );
+
+
+    if (progressSelect) {
+
+        progressSelect.addEventListener(
+            "change",
+            function () {
+
+                updateGoalsPreview(
+                    match
+                );
+
+            }
+        );
+
+    }
 
 }
 
 
 /* =========================================================
-   CHARGER LES JOUEURS DES DEUX ÉQUIPES
+   CHARGER LES JOUEURS
 ========================================================= */
 
 async function loadPlayersForMatch(
@@ -1942,24 +2043,26 @@ async function loadPlayersForMatch(
 
     try {
 
-        const results =
-            await Promise.all([
+        const [
+            homeData,
+            awayData
+        ] = await Promise.all([
 
-                apiRequest(
-                    "/players?team=" +
-                    match.homeId +
-                    "&season=" +
-                    match.season
-                ),
+            apiRequest(
+                "/players?team=" +
+                match.homeId +
+                "&season=" +
+                match.season
+            ),
 
-                apiRequest(
-                    "/players?team=" +
-                    match.awayId +
-                    "&season=" +
-                    match.season
-                )
+            apiRequest(
+                "/players?team=" +
+                match.awayId +
+                "&season=" +
+                match.season
+            )
 
-            ]);
+        ]);
 
 
         const players = [];
@@ -1971,8 +2074,7 @@ async function loadPlayersForMatch(
         ) {
 
             const response =
-                data.response ||
-                [];
+                data.response || [];
 
 
             response.forEach(
@@ -2008,18 +2110,19 @@ async function loadPlayersForMatch(
 
 
         addPlayers(
-            results[0],
+            homeData,
             match.home
         );
 
 
         addPlayers(
-            results[1],
+            awayData,
             match.away
         );
 
 
         const uniquePlayers = [];
+
 
         const ids =
             new Set();
@@ -2037,6 +2140,7 @@ async function loadPlayersForMatch(
                     ids.add(
                         player.id
                     );
+
 
                     uniquePlayers.push(
                         player
@@ -2060,9 +2164,7 @@ async function loadPlayersForMatch(
         );
 
 
-        if (
-            !uniquePlayers.length
-        ) {
+        if (!uniquePlayers.length) {
 
             container.innerHTML =
                 '<div class="empty">' +
@@ -2110,17 +2212,11 @@ async function loadPlayersForMatch(
 
                             'onclick="selectPlayer(this)">' +
 
-
-                            '<span>' +
-
                             "⚽ " +
 
                             escapeHTML(
                                 player.name
                             ) +
-
-                            "</span>" +
-
 
                             '<small style="margin-left:auto;color:#7f899a">' +
 
@@ -2129,7 +2225,6 @@ async function loadPlayersForMatch(
                             ) +
 
                             "</small>" +
-
 
                             "</button>"
 
@@ -2155,7 +2250,7 @@ async function loadPlayersForMatch(
 
             "<br><br>" +
 
-            "Vérifie ta clé API ou réessaie." +
+            "Tu peux réessayer en ouvrant le match." +
 
             "</div>";
 
@@ -2165,304 +2260,7 @@ async function loadPlayersForMatch(
 
 
 /* =========================================================
-   PERFORMANCE DES JOUEURS DU MATCH
-========================================================= */
-
-async function loadOfficialManOfMatch(
-    match
-) {
-
-    const container =
-        document.getElementById(
-            "officialMotm"
-        );
-
-
-    if (!container) {
-
-        return;
-
-    }
-
-
-    /*
-     * On ne cherche pas de MOTM
-     * avant la fin du match.
-     */
-
-    const status =
-        match.status &&
-        match.status.short;
-
-
-    if (
-        status !== "FT" &&
-        status !== "AET" &&
-        status !== "PEN"
-    ) {
-
-        container.innerHTML =
-
-            '<div class="empty">' +
-
-            "🏅 L'homme du match sera disponible après la rencontre." +
-
-            "</div>";
-
-        return;
-
-    }
-
-
-    try {
-
-        const data =
-            await apiRequest(
-                "/fixtures/players?fixture=" +
-                match.id
-            );
-
-
-        const teams =
-            data.response || [];
-
-
-        const performances = [];
-
-
-        teams.forEach(
-            function (teamBlock) {
-
-                const players =
-                    teamBlock.players ||
-                    [];
-
-
-                players.forEach(
-                    function (item) {
-
-                        if (
-                            !item ||
-                            !item.player ||
-                            !item.statistics ||
-                            !item.statistics.length
-                        ) {
-
-                            return;
-
-                        }
-
-
-                        const statistics =
-                            item.statistics[0];
-
-
-                        const games =
-                            statistics.games ||
-                            {};
-
-
-                        const rating =
-                            games.rating;
-
-
-                        if (
-                            rating !== null &&
-                            rating !== undefined
-                        ) {
-
-                            performances.push({
-
-                                id:
-                                    item.player.id,
-
-                                name:
-                                    item.player.name,
-
-                                photo:
-                                    item.player.photo,
-
-                                rating:
-                                    parseFloat(
-                                        rating
-                                    )
-
-                            });
-
-                        }
-
-                    }
-                );
-
-            }
-        );
-
-
-        if (
-            !performances.length
-        ) {
-
-            container.innerHTML =
-
-                '<div class="empty">' +
-
-                "Aucune note de joueur disponible pour ce match." +
-
-                "</div>";
-
-            return;
-
-        }
-
-
-        performances.sort(
-            function (a, b) {
-
-                return (
-                    b.rating -
-                    a.rating
-                );
-
-            }
-        );
-
-
-        /*
-         * IMPORTANT :
-         *
-         * API-Football fournit une note
-         * de performance, mais pas dans
-         * cette réponse un champ
-         * universel garantissant
-         * « homme du match officiel ».
-         *
-         * On affiche donc les meilleures
-         * performances sans les présenter
-         * comme un MOTM officiel.
-         */
-
-        const best =
-            performances.slice(
-                0,
-                3
-            );
-
-
-        container.innerHTML =
-
-            '<div class="performance-title">' +
-
-            "🏅 Meilleures performances du match" +
-
-            "</div>" +
-
-
-            best
-                .map(
-                    function (
-                        player,
-                        index
-                    ) {
-
-                        return (
-
-                            '<div class="motm-player">' +
-
-                            '<div class="motm-rank">' +
-
-                            (
-                                index + 1
-                            ) +
-
-                            "</div>" +
-
-
-                            (
-                                player.photo
-
-                                    ? '<img src="' +
-                                      escapeHTML(
-                                          player.photo
-                                      ) +
-                                      '" alt="">'
-
-                                    : '<div class="motm-photo-placeholder">⚽</div>'
-                            ) +
-
-
-                            '<div class="motm-player-info">' +
-
-                            "<strong>" +
-
-                            escapeHTML(
-                                player.name
-                            ) +
-
-                            "</strong>" +
-
-
-                            "<span>" +
-
-                            "Note : " +
-
-                            player.rating.toFixed(
-                                1
-                            ) +
-
-                            "/10" +
-
-                            "</span>" +
-
-
-                            "</div>" +
-
-
-                            "</div>"
-
-                        );
-
-                    }
-                )
-                .join("");
-
-
-        /*
-         * On garde la meilleure performance
-         * séparément, sans l'appeler
-         * « homme du match officiel ».
-         */
-
-        officialManOfMatch[
-            match.id
-        ] = best[0].name;
-
-
-        saveData();
-
-
-    } catch (error) {
-
-        console.error(
-            "Erreur performances joueurs :",
-            error
-        );
-
-
-        container.innerHTML =
-
-            '<div class="empty">' +
-
-            "Impossible de récupérer les performances des joueurs." +
-
-            "</div>";
-
-    }
-
-}
-
-
-/* =========================================================
-   CHOISIR UN JOUEUR PRÉFÉRÉ
+   CHOISIR JOUEUR
 ========================================================= */
 
 function selectPlayer(
@@ -2492,10 +2290,442 @@ function selectPlayer(
 
 
 /* =========================================================
-   SAUVEGARDER LE MATCH
+   RÉCUPÉRER LES ÉVÉNEMENTS DU MATCH
 ========================================================= */
 
-function saveMatch(id) {
+async function getMatchEvents(
+    fixtureId
+) {
+
+    const data =
+        await apiRequest(
+            "/fixtures/events?fixture=" +
+            fixtureId
+        );
+
+
+    return data.response || [];
+
+}
+
+
+/* =========================================================
+   VÉRIFIER SI UN ÉVÉNEMENT EST UN BUT
+========================================================= */
+
+function isGoalEvent(
+    event
+) {
+
+    if (!event) {
+
+        return false;
+
+    }
+
+
+    if (
+        event.type !==
+        "Goal"
+    ) {
+
+        return false;
+
+    }
+
+
+    /*
+     * On exclut les penalties
+     * uniquement s'ils sont des tirs
+     * au but après prolongation.
+     *
+     * Un penalty marqué pendant le
+     * match reste bien un but.
+     */
+
+    if (
+        event.detail ===
+        "Missed Penalty"
+    ) {
+
+        return false;
+
+    }
+
+
+    if (
+        event.detail ===
+        "Penalty Shootout"
+    ) {
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =========================================================
+   MINUTE RÉELLE D'UN ÉVÉNEMENT
+========================================================= */
+
+function getEventMinute(
+    event
+) {
+
+    if (
+        !event ||
+        !event.time
+    ) {
+
+        return 0;
+
+    }
+
+
+    const elapsed =
+        Number(
+            event.time.elapsed
+        ) || 0;
+
+
+    const extra =
+        Number(
+            event.time.extra
+        ) || 0;
+
+
+    /*
+     * Exemple :
+     * 45+2 devient 47.
+     * 90+4 devient 94.
+     */
+
+    return (
+        elapsed +
+        extra
+    );
+
+}
+
+
+/* =========================================================
+   CALCULER LES BUTS VUS
+========================================================= */
+
+function calculateGoalsSeen(
+    events,
+    maxMinute
+) {
+
+    let goals = 0;
+
+
+    events.forEach(
+        function (event) {
+
+            if (
+                !isGoalEvent(
+                    event
+                )
+            ) {
+
+                return;
+
+            }
+
+
+            const minute =
+                getEventMinute(
+                    event
+                );
+
+
+            if (
+                minute <=
+                Number(maxMinute)
+            ) {
+
+                goals++;
+
+            }
+
+        }
+    );
+
+
+    return goals;
+
+}
+
+
+/* =========================================================
+   METTRE À JOUR L'APERÇU DES BUTS
+========================================================= */
+
+async function updateGoalsPreview(
+    match
+) {
+
+    const preview =
+        document.getElementById(
+            "goalsPreview"
+        );
+
+
+    const select =
+        document.getElementById(
+            "watchProgress"
+        );
+
+
+    if (
+        !preview ||
+        !select
+    ) {
+
+        return;
+
+    }
+
+
+    const progress =
+        Number(
+            select.value
+        );
+
+
+    preview.innerHTML =
+        "⏳ Calcul des buts vus...";
+
+
+    try {
+
+        const events =
+            await getMatchEvents(
+                match.id
+            );
+
+
+        const goals =
+            calculateGoalsSeen(
+                events,
+                progress
+            );
+
+
+        preview.innerHTML =
+
+            "⚽ Buts vus jusqu'à " +
+
+            "<strong>" +
+
+            escapeHTML(
+                getWatchProgressLabel(
+                    progress
+                )
+            ) +
+
+            "</strong> : " +
+
+            "<strong>" +
+
+            goals +
+
+            "</strong>";
+
+    } catch (error) {
+
+        console.error(
+            "Erreur calcul buts :",
+            error
+        );
+
+
+        preview.innerHTML =
+            "⚠️ Impossible de calculer les buts vus pour le moment.";
+
+    }
+
+}
+
+
+/* =========================================================
+   HOMME DU MATCH OFFICIEL
+========================================================= */
+
+async function loadOfficialMOTM(
+    match
+) {
+
+    const box =
+        document.getElementById(
+            "officialMOTMBox"
+        );
+
+
+    if (!box) {
+
+        return;
+
+    }
+
+
+    /*
+     * Si déjà enregistré localement,
+     * on l'affiche directement.
+     */
+
+    if (
+        officialMOTM[match.id]
+    ) {
+
+        box.innerHTML =
+            "🏅 Homme du match officiel : <strong>" +
+            escapeHTML(
+                officialMOTM[match.id]
+            ) +
+            "</strong>";
+
+        return;
+
+    }
+
+
+    try {
+
+        /*
+         * API-Football fournit les
+         * statistiques des joueurs
+         * du match.
+         */
+
+        const data =
+            await apiRequest(
+                "/fixtures/players?fixture=" +
+                match.id
+            );
+
+
+        const response =
+            data.response || [];
+
+
+        let bestPlayer =
+            null;
+
+
+        let bestRating =
+            -1;
+
+
+        response.forEach(
+            function (teamData) {
+
+                const players =
+                    teamData.players ||
+                    [];
+
+
+                players.forEach(
+                    function (item) {
+
+                        if (
+                            !item ||
+                            !item.player
+                        ) {
+
+                            return;
+
+                        }
+
+
+                        const rating =
+                            item.statistics &&
+                            item.statistics[0] &&
+                            item.statistics[0].games &&
+                            item.statistics[0].games.rating
+                                ? Number(
+                                    item.statistics[0].games.rating
+                                )
+                                : 0;
+
+
+                        if (
+                            rating >
+                            bestRating
+                        ) {
+
+                            bestRating =
+                                rating;
+
+
+                            bestPlayer =
+                                item.player.name;
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+
+        if (bestPlayer) {
+
+            officialMOTM[match.id] =
+                bestPlayer;
+
+
+            saveData();
+
+
+            box.innerHTML =
+
+                "🏅 Homme du match officiel : " +
+
+                "<strong>" +
+
+                escapeHTML(
+                    bestPlayer
+                ) +
+
+                "</strong>";
+
+        } else {
+
+            box.innerHTML =
+                "🏅 Homme du match officiel : non disponible.";
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erreur homme du match :",
+            error
+        );
+
+
+        box.innerHTML =
+            "🏅 Homme du match officiel : non disponible pour ce match.";
+
+    }
+
+}
+
+
+/* =========================================================
+   SAUVEGARDER MATCH
+========================================================= */
+
+async function saveMatch(
+    id
+) {
 
     const ratingInput =
         document.getElementById(
@@ -2515,6 +2745,12 @@ function saveMatch(id) {
         );
 
 
+    const progressInput =
+        document.getElementById(
+            "watchProgress"
+        );
+
+
     const selectedPlayer =
         document.querySelector(
             ".player-choice.selected"
@@ -2524,7 +2760,8 @@ function saveMatch(id) {
     if (
         !ratingInput ||
         !qualityInput ||
-        !commentInput
+        !commentInput ||
+        !progressInput
     ) {
 
         return;
@@ -2559,6 +2796,78 @@ function saveMatch(id) {
             : "";
 
 
+    const watchProgress =
+        Number(
+            progressInput.value
+        );
+
+
+    const match =
+        allMatches.find(
+            function (item) {
+
+                return (
+                    item.id ===
+                    id
+                );
+
+            }
+        );
+
+
+    if (!match) {
+
+        return;
+
+    }
+
+
+    /*
+     * On récupère les événements
+     * afin de déterminer exactement
+     * combien de buts ont été vus.
+     */
+
+    let goalsSeen = 0;
+
+
+    try {
+
+        const events =
+            await getMatchEvents(
+                id
+            );
+
+
+        goalsSeen =
+            calculateGoalsSeen(
+                events,
+                watchProgress
+            );
+
+    } catch (error) {
+
+        console.error(
+            "Impossible de récupérer les buts :",
+            error
+        );
+
+
+        /*
+         * Si l'API ne répond pas,
+         * on ne prétend pas connaître
+         * le nombre de buts vus.
+         */
+
+        goalsSeen =
+            watchedMatches[id] &&
+            watchedMatches[id].goalsSeen !== undefined
+                ? watchedMatches[id].goalsSeen
+                : 0;
+
+    }
+
+
     if (favorite) {
 
         favoritePlayers[id] =
@@ -2582,11 +2891,21 @@ function saveMatch(id) {
         favoritePlayer:
             favorite,
 
+        officialMOTM:
+            officialMOTM[id] ||
+            "",
+
         quality:
             qualityInput.value,
 
         comment:
             commentInput.value,
+
+        watchProgress:
+            watchProgress,
+
+        goalsSeen:
+            goalsSeen,
 
         watchedAt:
             new Date().toISOString()
@@ -2602,9 +2921,12 @@ function saveMatch(id) {
 
     renderCurrentCompetition();
 
+
     renderHistory();
 
+
     renderStats();
+
 
     renderAwards();
 
@@ -2612,7 +2934,7 @@ function saveMatch(id) {
 
 
 /* =========================================================
-   RENDRE LA COMPÉTITION ACTUELLE
+   RENDRE LES MATCHS ACTUELS
 ========================================================= */
 
 function renderCurrentCompetition() {
@@ -2637,7 +2959,7 @@ function renderCurrentCompetition() {
 
 
 /* =========================================================
-   FERMER LA MODALE
+   MODAL
 ========================================================= */
 
 function closeModal() {
@@ -2648,16 +2970,13 @@ function closeModal() {
         );
 
 
-    if (!modal) {
+    if (modal) {
 
-        return;
+        modal.classList.remove(
+            "show"
+        );
 
     }
-
-
-    modal.classList.remove(
-        "show"
-    );
 
 }
 
@@ -2678,15 +2997,15 @@ if (closeModalButton) {
 }
 
 
-const modal =
+const matchModal =
     document.getElementById(
         "matchModal"
     );
 
 
-if (modal) {
+if (matchModal) {
 
-    modal.addEventListener(
+    matchModal.addEventListener(
         "click",
         function (event) {
 
@@ -2703,88 +3022,111 @@ if (modal) {
     );
 
 }
+
+
 /* =========================================================
-   NAVIGATION ENTRE LES PAGES
+   NAVIGATION
 ========================================================= */
 
 document
-    .querySelectorAll(".nav-btn")
-    .forEach(function (button) {
+    .querySelectorAll(
+        ".nav-btn"
+    )
+    .forEach(
+        function (button) {
 
-        button.addEventListener(
-            "click",
-            function () {
+            button.addEventListener(
+                "click",
+                function () {
 
-                const page =
-                    button.dataset.page;
+                    const page =
+                        button.dataset.page;
 
 
-                document
-                    .querySelectorAll(".page")
-                    .forEach(function (section) {
+                    document
+                        .querySelectorAll(
+                            ".page"
+                        )
+                        .forEach(
+                            function (section) {
 
-                        section.classList.remove(
+                                section.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
+
+
+                    const target =
+                        document.getElementById(
+                            page
+                        );
+
+
+                    if (target) {
+
+                        target.classList.add(
                             "active"
                         );
 
-                    });
+                    }
 
 
-                const target =
-                    document.getElementById(
-                        page
-                    );
+                    document
+                        .querySelectorAll(
+                            ".nav-btn"
+                        )
+                        .forEach(
+                            function (btn) {
+
+                                btn.classList.remove(
+                                    "active"
+                                );
+
+                            }
+                        );
 
 
-                if (target) {
-
-                    target.classList.add(
+                    button.classList.add(
                         "active"
                     );
 
-                }
+
+                    if (
+                        page ===
+                        "history"
+                    ) {
+
+                        renderHistory();
+
+                    }
 
 
-                document
-                    .querySelectorAll(".nav-btn")
-                    .forEach(function (btn) {
+                    if (
+                        page ===
+                        "stats"
+                    ) {
 
-                        btn.classList.remove(
-                            "active"
-                        );
+                        renderStats();
 
-                    });
-
-
-                button.classList.add(
-                    "active"
-                );
+                    }
 
 
-                if (page === "history") {
+                    if (
+                        page ===
+                        "awards"
+                    ) {
 
-                    renderHistory();
+                        renderAwards();
 
-                }
-
-
-                if (page === "stats") {
-
-                    renderStats();
-
-                }
-
-
-                if (page === "awards") {
-
-                    renderAwards();
+                    }
 
                 }
+            );
 
-            }
-        );
-
-    });
+        }
+    );
 
 
 /* =========================================================
@@ -2804,7 +3146,8 @@ if (previousDay) {
         function () {
 
             selectedDate.setDate(
-                selectedDate.getDate() - 1
+                selectedDate.getDate() -
+                1
             );
 
 
@@ -2836,7 +3179,8 @@ if (nextDay) {
         function () {
 
             selectedDate.setDate(
-                selectedDate.getDate() + 1
+                selectedDate.getDate() +
+                1
             );
 
 
@@ -2914,137 +3258,171 @@ function renderHistory() {
     }
 
 
-    /*
-     * Les matchs peuvent avoir été
-     * enregistrés plusieurs jours
-     * auparavant.
-     *
-     * On utilise les informations
-     * disponibles dans allMatches.
-     */
-
     container.innerHTML =
         saved
-            .sort(function (a, b) {
+            .sort(
+                function (a, b) {
 
-                return (
-                    new Date(
-                        b.watchedAt
-                    ) -
-                    new Date(
-                        a.watchedAt
-                    )
-                );
-
-            })
-            .map(function (item) {
-
-                const match =
-                    allMatches.find(
-                        function (m) {
-
-                            return (
-                                m.id ===
-                                item.matchId
-                            );
-
-                        }
+                    return (
+                        new Date(
+                            b.watchedAt
+                        ) -
+                        new Date(
+                            a.watchedAt
+                        )
                     );
 
+                }
+            )
+            .map(
+                function (item) {
 
-                const favorite =
-                    item.favoritePlayer ||
-                    "Aucun joueur sélectionné";
+                    const match =
+                        allMatches.find(
+                            function (m) {
 
+                                return (
+                                    m.id ===
+                                    item.matchId
+                                );
 
-                const comment =
-                    item.comment ||
-                    "";
-
-
-                return (
-
-                    '<div class="history-card">' +
-
-
-                    '<div class="history-main">' +
-
-
-                    "<strong>" +
-
-                    (
-                        match
-
-                            ? escapeHTML(
-                                match.home +
-                                " - " +
-                                match.away
-                            )
-
-                            : "Match enregistré"
-                    ) +
-
-                    "</strong>" +
+                            }
+                        );
 
 
-                    (
-                        match
-
-                            ? "<span>" +
-                              escapeHTML(
-                                  match.competition
-                              ) +
-                              "</span>"
-
-                            : ""
-                    ) +
+                    const favorite =
+                        item.favoritePlayer ||
+                        "Aucun joueur sélectionné";
 
 
-                    "<span>" +
-
-                    "⭐ " +
-
-                    escapeHTML(
-                        favorite
-                    ) +
-
-                    "</span>" +
+                    const comment =
+                        item.comment ||
+                        "";
 
 
-                    (
-                        comment
+                    return (
 
-                            ? '<p class="history-comment">' +
-                              escapeHTML(
-                                  comment
-                              ) +
-                              "</p>"
-
-                            : ""
-                    ) +
+                        '<div class="history-card">' +
 
 
-                    "</div>" +
+                        '<div class="history-main">' +
 
 
-                    '<div class="rating">' +
+                        "<strong>" +
 
-                    "⭐ " +
+                        (
+                            match
 
-                    Number(
-                        item.rating
-                    ).toFixed(1) +
+                                ? escapeHTML(
+                                    match.home +
+                                    " - " +
+                                    match.away
+                                )
 
-                    "/10" +
+                                : "Match enregistré"
+                        ) +
 
-                    "</div>" +
+                        "</strong>" +
 
 
-                    "</div>"
+                        (
+                            match
 
-                );
+                                ? "<span>" +
+                                  escapeHTML(
+                                      match.competition
+                                  ) +
+                                  "</span>"
 
-            })
+                                : ""
+                        ) +
+
+
+                        "<span>" +
+
+                        "⭐ " +
+
+                        escapeHTML(
+                            favorite
+                        ) +
+
+                        "</span>" +
+
+
+                        (
+                            item.officialMOTM
+
+                                ? "<span>🏅 Homme du match : " +
+                                  escapeHTML(
+                                      item.officialMOTM
+                                  ) +
+                                  "</span>"
+
+                                : ""
+                        ) +
+
+
+                        (
+                            item.watchProgress
+
+                                ? "<span>⏱️ Vu jusqu'à " +
+                                  escapeHTML(
+                                      getWatchProgressLabel(
+                                          item.watchProgress
+                                      )
+                                  ) +
+                                  "</span>"
+
+                                : ""
+                        ) +
+
+
+                        (
+                            item.goalsSeen !== undefined
+
+                                ? "<span>⚽ " +
+                                  item.goalsSeen +
+                                  " but(s) vu(s)</span>"
+
+                                : ""
+                        ) +
+
+
+                        (
+                            comment
+
+                                ? '<p class="history-comment">' +
+                                  escapeHTML(
+                                      comment
+                                  ) +
+                                  "</p>"
+
+                                : ""
+                        ) +
+
+
+                        "</div>" +
+
+
+                        '<div class="rating">' +
+
+                        "⭐ " +
+
+                        Number(
+                            item.rating
+                        ).toFixed(1) +
+
+                        "/10" +
+
+                        "</div>" +
+
+
+                        "</div>"
+
+                    );
+
+                }
+            )
             .join("");
 
 }
@@ -3133,13 +3511,15 @@ function renderStats() {
 
 
     const ratings =
-        saved.map(function (item) {
+        saved.map(
+            function (item) {
 
-            return Number(
-                item.rating
-            );
+                return Number(
+                    item.rating
+                );
 
-        });
+            }
+        );
 
 
     const totalRatings =
@@ -3170,39 +3550,33 @@ function renderStats() {
         );
 
 
-    let totalGoals = 0;
+    /*
+     * IMPORTANT :
+     *
+     * On utilise goalsSeen enregistré
+     * au moment où le match a été
+     * sauvegardé.
+     *
+     * Donc un match final 2-1,
+     * regardé jusqu'à la mi-temps
+     * avec un score de 1-0,
+     * compte seulement 1 but.
+     */
+
+    let totalGoals =
+        0;
 
 
     saved.forEach(
         function (item) {
 
-            const match =
-                allMatches.find(
-                    function (m) {
-
-                        return (
-                            m.id ===
-                            item.matchId
-                        );
-
-                    }
-                );
-
-
             if (
-                match &&
-                match.homeScore !== null &&
-                match.homeScore !== undefined &&
-                match.awayScore !== null &&
-                match.awayScore !== undefined
+                item.goalsSeen !== undefined
             ) {
 
                 totalGoals +=
                     Number(
-                        match.homeScore
-                    ) +
-                    Number(
-                        match.awayScore
+                        item.goalsSeen
                     );
 
             }
@@ -3267,7 +3641,7 @@ function renderStats() {
 
 
 /* =========================================================
-   CRÉER UNE STAT
+   CRÉER STAT
 ========================================================= */
 
 function createStat(
@@ -3279,7 +3653,6 @@ function createStat(
 
         '<div class="stat-card">' +
 
-
         '<div class="number">' +
 
         escapeHTML(
@@ -3287,7 +3660,6 @@ function createStat(
         ) +
 
         "</div>" +
-
 
         '<div class="label">' +
 
@@ -3297,7 +3669,6 @@ function createStat(
 
         "</div>" +
 
-
         "</div>"
 
     );
@@ -3306,7 +3677,7 @@ function createStat(
 
 
 /* =========================================================
-   STATISTIQUES PAR COMPÉTITION
+   STATS COMPÉTITIONS
 ========================================================= */
 
 function renderCompetitionStats(
@@ -3403,14 +3774,16 @@ function renderCompetitionStats(
 
     container.innerHTML =
         entries
-            .sort(function (a, b) {
+            .sort(
+                function (a, b) {
 
-                return (
-                    b[1].count -
-                    a[1].count
-                );
+                    return (
+                        b[1].count -
+                        a[1].count
+                    );
 
-            })
+                }
+            )
             .map(
                 function (
                     [name, data]
@@ -3419,7 +3792,6 @@ function renderCompetitionStats(
                     return (
 
                         '<div class="competition-stat">' +
-
 
                         "<strong>" +
 
@@ -3471,7 +3843,7 @@ function renderCompetitionStats(
 
 
 /* =========================================================
-   STATISTIQUES PAR MOIS
+   STATS MOIS
 ========================================================= */
 
 function renderMonthlyStats(
@@ -3570,7 +3942,7 @@ function renderMonthlyStats(
 
 
 /* =========================================================
-   STATISTIQUES PAR SAISON
+   STATS SAISONS
 ========================================================= */
 
 function renderSeasonStats(
@@ -3732,6 +4104,26 @@ function renderAwards() {
             ratings.length;
 
 
+        const totalGoals =
+            saved.reduce(
+                function (
+                    total,
+                    item
+                ) {
+
+                    return (
+                        total +
+                        Number(
+                            item.goalsSeen ||
+                            0
+                        )
+                    );
+
+                },
+                0
+            );
+
+
         container.innerHTML =
 
             '<div class="award-card">' +
@@ -3772,6 +4164,19 @@ function renderAwards() {
 
             "/10</strong>" +
 
+            "</div>" +
+
+
+            '<div class="award-card">' +
+
+            "⚽ Buts réellement vus : " +
+
+            "<strong>" +
+
+            totalGoals +
+
+            "</strong>" +
+
             "</div>";
 
     }
@@ -3783,7 +4188,7 @@ function renderAwards() {
 
 
 /* =========================================================
-   CLASSEMENT DES JOUEURS PRÉFÉRÉS
+   JOUEURS PRÉFÉRÉS
 ========================================================= */
 
 function renderPlayersRanking() {
@@ -3868,7 +4273,6 @@ function renderPlayersRanking() {
                     return (
 
                         '<div class="player-card">' +
-
 
                         '<div class="player-number">' +
 
@@ -3981,6 +4385,8 @@ if (searchInput) {
 
                             item.favoritePlayer,
 
+                            item.officialMOTM,
+
                             match
                                 ? match.home
                                 : "",
@@ -4020,11 +4426,6 @@ if (searchInput) {
             }
 
 
-            /*
-             * Affichage temporaire des
-             * résultats filtrés.
-             */
-
             container.innerHTML =
                 filtered
                     .sort(
@@ -4061,7 +4462,9 @@ if (searchInput) {
 
                                 '<div class="history-card">' +
 
+
                                 '<div class="history-main">' +
+
 
                                 "<strong>" +
 
@@ -4093,16 +4496,56 @@ if (searchInput) {
                                 ) +
 
 
-                                "<span>" +
+                                (
+                                    item.favoritePlayer
 
-                                "⭐ " +
+                                        ? "<span>⭐ " +
+                                          escapeHTML(
+                                              item.favoritePlayer
+                                          ) +
+                                          "</span>"
 
-                                escapeHTML(
-                                    item.favoritePlayer ||
-                                    "Aucun joueur"
+                                        : ""
                                 ) +
 
-                                "</span>" +
+
+                                (
+                                    item.officialMOTM
+
+                                        ? "<span>🏅 " +
+                                          escapeHTML(
+                                              item.officialMOTM
+                                          ) +
+                                          "</span>"
+
+                                        : ""
+                                ) +
+
+
+                                (
+                                    item.watchProgress
+
+                                        ? "<span>⏱️ Vu jusqu'à " +
+                                          escapeHTML(
+                                              getWatchProgressLabel(
+                                                  item.watchProgress
+                                              )
+                                          ) +
+                                          "</span>"
+
+                                        : ""
+                                ) +
+
+
+                                (
+                                    item.goalsSeen !== undefined
+
+                                        ? "<span>⚽ " +
+                                          item.goalsSeen +
+                                          " but(s) vu(s)</span>"
+
+                                        : ""
+                                ) +
 
 
                                 (
