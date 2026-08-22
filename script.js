@@ -1,27 +1,24 @@
 /* =========================================================
    FOOTSCOPE
    API-FOOTBALL
-========================================================= */
-
+   ========================================================= */
 
 /* =========================================================
    🔴 TA CLÉ API
-========================================================= */
+   ========================================================= */
 
-const API_KEY = "";
-
+const API_KEY = "25fd0757eec89ba850a53745eab92ab7";
 
 /* =========================================================
    API
-========================================================= */
+   ========================================================= */
 
 const API_URL =
     "https://v3.football.api-sports.io";
 
-
 /* =========================================================
    COMPÉTITIONS
-========================================================= */
+   ========================================================= */
 
 const LEAGUES = {
 
@@ -147,20 +144,12 @@ const LEAGUES = {
 
 };
 
-
 /* =========================================================
-   DONNÉES
-========================================================= */
+   DONNÉES ACTUELLES
+   ========================================================= */
 
 let matches = [];
-
 let allMatches = [];
-
-let watchedMatches = {};
-
-let favoritePlayers = {};
-
-let officialMOTM = {};
 
 let selectedDate = new Date();
 
@@ -173,78 +162,333 @@ selectedDate.setHours(
 
 let selectedCompetition = null;
 
+/* =========================================================
+   🔒 CLÉS DE STOCKAGE PROTÉGÉES
+   ========================================================= */
+
+const STORAGE_KEYS = {
+
+    watched:
+        "footScopeWatched",
+
+    favorites:
+        "footScopeFavoritePlayers",
+
+    motm:
+        "footScopeOfficialMOTM",
+
+    watchedBackup:
+        "footScopeWatched_BACKUP",
+
+    favoritesBackup:
+        "footScopeFavoritePlayers_BACKUP",
+
+    motmBackup:
+        "footScopeOfficialMOTM_BACKUP"
+
+};
 
 /* =========================================================
-   LOCAL STORAGE
-========================================================= */
+   🔒 CHARGEMENT SÉCURISÉ DES DONNÉES
+   ========================================================= */
 
-try {
+function loadProtectedData(
+    mainKey,
+    backupKey
+) {
 
-    watchedMatches =
-        JSON.parse(
+    /*
+     * 1. On essaie d'abord les données
+     * principales.
+     */
+
+    try {
+
+        const mainData =
             localStorage.getItem(
-                "footScopeWatched"
-            )
-        ) || {};
+                mainKey
+            );
 
-    favoritePlayers =
-        JSON.parse(
+        if (mainData) {
+
+            const parsed =
+                JSON.parse(
+                    mainData
+                );
+
+            if (
+                parsed &&
+                typeof parsed === "object"
+            ) {
+
+                return parsed;
+
+            }
+
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "⚠️ Données principales illisibles :",
+            mainKey,
+            error
+        );
+
+    }
+
+    /*
+     * 2. Si problème, on récupère
+     * la sauvegarde de secours.
+     */
+
+    try {
+
+        const backupData =
             localStorage.getItem(
-                "footScopeFavoritePlayers"
-            )
-        ) || {};
+                backupKey
+            );
 
-    officialMOTM =
-        JSON.parse(
-            localStorage.getItem(
-                "footScopeOfficialMOTM"
-            )
-        ) || {};
+        if (backupData) {
 
-} catch (error) {
+            const parsedBackup =
+                JSON.parse(
+                    backupData
+                );
 
-    watchedMatches = {};
+            if (
+                parsedBackup &&
+                typeof parsedBackup === "object"
+            ) {
 
-    favoritePlayers = {};
+                console.warn(
+                    "♻️ Récupération depuis la sauvegarde :",
+                    backupKey
+                );
 
-    officialMOTM = {};
+                return parsedBackup;
+
+            }
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "❌ Impossible de lire la sauvegarde :",
+            error
+        );
+
+    }
+
+    /*
+     * Aucun fichier valide trouvé.
+     */
+
+    return {};
 
 }
 
+/* =========================================================
+   DONNÉES PERSISTANTES
+   ========================================================= */
+
+let watchedMatches =
+    loadProtectedData(
+        STORAGE_KEYS.watched,
+        STORAGE_KEYS.watchedBackup
+    );
+
+let favoritePlayers =
+    loadProtectedData(
+        STORAGE_KEYS.favorites,
+        STORAGE_KEYS.favoritesBackup
+    );
+
+let officialMOTM =
+    loadProtectedData(
+        STORAGE_KEYS.motm,
+        STORAGE_KEYS.motmBackup
+    );
 
 /* =========================================================
-   SAUVEGARDE
-========================================================= */
+   🔒 ÉCRITURE PROTÉGÉE
+   ========================================================= */
+
+function safeStorageWrite(
+    mainKey,
+    backupKey,
+    data
+) {
+
+    let json;
+
+    try {
+
+        json =
+            JSON.stringify(
+                data
+            );
+
+    } catch (error) {
+
+        console.error(
+            "❌ Impossible de convertir les données :",
+            error
+        );
+
+        return false;
+
+    }
+
+    /*
+     * On sauvegarde d'abord une copie
+     * de secours.
+     */
+
+    try {
+
+        localStorage.setItem(
+            backupKey,
+            json
+        );
+
+    } catch (error) {
+
+        console.error(
+            "❌ Impossible de créer la sauvegarde :",
+            error
+        );
+
+    }
+
+    /*
+     * Puis les données principales.
+     */
+
+    try {
+
+        localStorage.setItem(
+            mainKey,
+            json
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "❌ Impossible de sauvegarder les données principales :",
+            error
+        );
+
+        return false;
+
+    }
+
+}
+
+/* =========================================================
+   SAUVEGARDE GÉNÉRALE
+   ========================================================= */
 
 function saveData() {
 
-    localStorage.setItem(
-        "footScopeWatched",
-        JSON.stringify(
-            watchedMatches
-        )
+    safeStorageWrite(
+        STORAGE_KEYS.watched,
+        STORAGE_KEYS.watchedBackup,
+        watchedMatches
     );
 
-    localStorage.setItem(
-        "footScopeFavoritePlayers",
-        JSON.stringify(
-            favoritePlayers
-        )
+    safeStorageWrite(
+        STORAGE_KEYS.favorites,
+        STORAGE_KEYS.favoritesBackup,
+        favoritePlayers
     );
 
-    localStorage.setItem(
-        "footScopeOfficialMOTM",
-        JSON.stringify(
-            officialMOTM
-        )
+    safeStorageWrite(
+        STORAGE_KEYS.motm,
+        STORAGE_KEYS.motmBackup,
+        officialMOTM
     );
 
 }
 
+/* =========================================================
+   🔒 MIGRATION / PROTECTION DES ANCIENNES DONNÉES
+   ========================================================= */
+
+function protectExistingData() {
+
+    /*
+     * Cette fonction permet de prendre les
+     * anciennes données qui existaient avant
+     * cette version et de créer leur backup.
+     */
+
+    try {
+
+        if (
+            Object.keys(
+                watchedMatches
+            ).length > 0
+        ) {
+
+            localStorage.setItem(
+                STORAGE_KEYS.watchedBackup,
+                JSON.stringify(
+                    watchedMatches
+                )
+            );
+
+        }
+
+        if (
+            Object.keys(
+                favoritePlayers
+            ).length > 0
+        ) {
+
+            localStorage.setItem(
+                STORAGE_KEYS.favoritesBackup,
+                JSON.stringify(
+                    favoritePlayers
+                )
+            );
+
+        }
+
+        if (
+            Object.keys(
+                officialMOTM
+            ).length > 0
+        ) {
+
+            localStorage.setItem(
+                STORAGE_KEYS.motmBackup,
+                JSON.stringify(
+                    officialMOTM
+                )
+            );
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erreur protection données :",
+            error
+        );
+
+    }
+
+}
+
+protectExistingData();
 
 /* =========================================================
    ÉCHAPPEMENT HTML
-========================================================= */
+   ========================================================= */
 
 function escapeHTML(value) {
 
@@ -281,10 +525,9 @@ function escapeHTML(value) {
 
 }
 
-
 /* =========================================================
    DATE
-========================================================= */
+   ========================================================= */
 
 function getDateString(date) {
 
@@ -317,7 +560,6 @@ function getDateString(date) {
 
 }
 
-
 function formatDateFR(
     dateString
 ) {
@@ -340,10 +582,9 @@ function formatDateFR(
 
 }
 
-
 /* =========================================================
    DATE AFFICHÉE
-========================================================= */
+   ========================================================= */
 
 function updateSelectedDateDisplay() {
 
@@ -353,9 +594,7 @@ function updateSelectedDateDisplay() {
         );
 
     if (!dateElement) {
-
         return;
-
     }
 
     let dateText =
@@ -365,22 +604,18 @@ function updateSelectedDateDisplay() {
             )
         );
 
-
     dateText =
-        dateText.charAt(0)
-        .toUpperCase() +
+        dateText.charAt(0).toUpperCase() +
         dateText.slice(1);
-
 
     dateElement.textContent =
         dateText;
 
 }
 
-
 /* =========================================================
    HEURE
-========================================================= */
+   ========================================================= */
 
 function formatTime(
     dateString
@@ -398,21 +633,17 @@ function formatTime(
 
 }
 
-
 /* =========================================================
    STATUS
-========================================================= */
+   ========================================================= */
 
 function getStatusText(
     status
 ) {
 
     if (!status) {
-
         return "";
-
     }
-
 
     const statuses = {
 
@@ -432,7 +663,6 @@ function getStatusText(
 
     };
 
-
     return (
         statuses[
             status.short
@@ -443,10 +673,9 @@ function getStatusText(
 
 }
 
-
 /* =========================================================
    STATUS API
-========================================================= */
+   ========================================================= */
 
 function showApiStatus(
     message,
@@ -458,21 +687,15 @@ function showApiStatus(
             "apiStatus"
         );
 
-
     if (!element) {
-
         return;
-
     }
-
 
     element.textContent =
         message;
 
-
     element.className =
         "api-status";
-
 
     if (type) {
 
@@ -484,10 +707,9 @@ function showApiStatus(
 
 }
 
-
 /* =========================================================
    REQUÊTE API
-========================================================= */
+   ========================================================= */
 
 async function apiRequest(
     endpoint
@@ -512,7 +734,6 @@ async function apiRequest(
             }
         );
 
-
     if (!response.ok) {
 
         throw new Error(
@@ -522,10 +743,8 @@ async function apiRequest(
 
     }
 
-
     const data =
         await response.json();
-
 
     if (
         data.errors &&
@@ -542,15 +761,13 @@ async function apiRequest(
 
     }
 
-
     return data;
 
 }
 
-
 /* =========================================================
    CHARGER LES MATCHS
-========================================================= */
+   ========================================================= */
 
 async function loadMatches() {
 
@@ -569,28 +786,23 @@ async function loadMatches() {
 
     }
 
-
     const date =
         getDateString(
             selectedDate
         );
 
-
     selectedCompetition =
         null;
-
 
     const competitionMatches =
         document.getElementById(
             "competitionMatches"
         );
 
-
     const competitionsContainer =
         document.getElementById(
             "competitionsContainer"
         );
-
 
     if (competitionMatches) {
 
@@ -600,7 +812,6 @@ async function loadMatches() {
 
     }
 
-
     if (competitionsContainer) {
 
         competitionsContainer.style.display =
@@ -608,14 +819,12 @@ async function loadMatches() {
 
     }
 
-
     showApiStatus(
         "⏳ Chargement des matchs du " +
         formatDateFR(date) +
         "...",
         ""
     );
-
 
     if (competitionsContainer) {
 
@@ -626,7 +835,6 @@ async function loadMatches() {
 
     }
 
-
     try {
 
         const data =
@@ -635,13 +843,10 @@ async function loadMatches() {
                 date
             );
 
-
         allMatches = [];
-
 
         const fixtures =
             data.response || [];
-
 
         fixtures.forEach(
             function (fixture) {
@@ -650,7 +855,6 @@ async function loadMatches() {
                     normalizeFixture(
                         fixture
                     );
-
 
                 if (normalized) {
 
@@ -663,10 +867,8 @@ async function loadMatches() {
             }
         );
 
-
         matches =
             allMatches.slice();
-
 
         matches.sort(
             function (a, b) {
@@ -679,16 +881,13 @@ async function loadMatches() {
             }
         );
 
-
         showApiStatus(
             allMatches.length +
             " match(s) trouvé(s)",
             "success"
         );
 
-
         renderCompetitions();
-
 
     } catch (error) {
 
@@ -697,10 +896,8 @@ async function loadMatches() {
             error
         );
 
-
         let message =
             "❌ Impossible de charger les matchs.";
-
 
         if (
             error.message &&
@@ -714,12 +911,10 @@ async function loadMatches() {
 
         }
 
-
         showApiStatus(
             message,
             "error"
         );
-
 
         if (competitionsContainer) {
 
@@ -741,10 +936,9 @@ async function loadMatches() {
 
 }
 
-
 /* =========================================================
    NORMALISATION
-========================================================= */
+   ========================================================= */
 
 function normalizeFixture(
     fixture
@@ -761,10 +955,8 @@ function normalizeFixture(
 
     }
 
-
     const leagueId =
         fixture.league.id;
-
 
     const leagueExists =
         Object.values(
@@ -780,13 +972,9 @@ function normalizeFixture(
             }
         );
 
-
     if (!leagueExists) {
-
         return null;
-
     }
-
 
     return {
 
@@ -848,10 +1036,9 @@ function normalizeFixture(
 
 }
 
-
 /* =========================================================
    COMPÉTITIONS
-========================================================= */
+   ========================================================= */
 
 function renderCompetitions() {
 
@@ -860,23 +1047,17 @@ function renderCompetitions() {
             "competitionsContainer"
         );
 
-
     if (!container) {
-
         return;
-
     }
-
 
     container.style.display =
         "grid";
-
 
     const competitionMatches =
         document.getElementById(
             "competitionMatches"
         );
-
 
     if (competitionMatches) {
 
@@ -885,7 +1066,6 @@ function renderCompetitions() {
         );
 
     }
-
 
     if (!allMatches.length) {
 
@@ -900,9 +1080,7 @@ function renderCompetitions() {
 
     }
 
-
     const groups = {};
-
 
     allMatches.forEach(
         function (match) {
@@ -926,7 +1104,6 @@ function renderCompetitions() {
 
             }
 
-
             groups[
                 match.leagueId
             ].matches.push(
@@ -936,12 +1113,10 @@ function renderCompetitions() {
         }
     );
 
-
     const competitions =
         Object.values(
             groups
         );
-
 
     container.innerHTML =
         competitions
@@ -958,10 +1133,9 @@ function renderCompetitions() {
 
 }
 
-
 /* =========================================================
    CARTE COMPÉTITION
-========================================================= */
+   ========================================================= */
 
 function createCompetitionCard(
     competition
@@ -977,7 +1151,6 @@ function createCompetitionCard(
                 '" alt="">'
             )
             : "🏆";
-
 
     return (
 
@@ -1036,10 +1209,9 @@ function createCompetitionCard(
 
 }
 
-
 /* =========================================================
    OUVRIR COMPÉTITION
-========================================================= */
+   ========================================================= */
 
 function openCompetition(
     leagueId
@@ -1047,7 +1219,6 @@ function openCompetition(
 
     selectedCompetition =
         leagueId;
-
 
     const competitionMatches =
         allMatches.filter(
@@ -1061,23 +1232,17 @@ function openCompetition(
             }
         );
 
-
     if (!competitionMatches.length) {
-
         return;
-
     }
-
 
     const competition =
         competitionMatches[0];
-
 
     const competitionsContainer =
         document.getElementById(
             "competitionsContainer"
         );
-
 
     if (competitionsContainer) {
 
@@ -1086,12 +1251,10 @@ function openCompetition(
 
     }
 
-
     const competitionPage =
         document.getElementById(
             "competitionMatches"
         );
-
 
     if (competitionPage) {
 
@@ -1101,12 +1264,10 @@ function openCompetition(
 
     }
 
-
     const title =
         document.getElementById(
             "selectedCompetitionTitle"
         );
-
 
     if (title) {
 
@@ -1116,19 +1277,14 @@ function openCompetition(
 
     }
 
-
     const container =
         document.getElementById(
             "matchesContainer"
         );
 
-
     if (!container) {
-
         return;
-
     }
-
 
     container.innerHTML =
         competitionMatches
@@ -1145,16 +1301,14 @@ function openCompetition(
 
 }
 
-
 /* =========================================================
    RETOUR AUX COMPÉTITIONS
-========================================================= */
+   ========================================================= */
 
 const backToCompetitions =
     document.getElementById(
         "backToCompetitions"
     );
-
 
 if (backToCompetitions) {
 
@@ -1165,12 +1319,10 @@ if (backToCompetitions) {
             selectedCompetition =
                 null;
 
-
             const competitionMatches =
                 document.getElementById(
                     "competitionMatches"
                 );
-
 
             if (competitionMatches) {
 
@@ -1180,12 +1332,10 @@ if (backToCompetitions) {
 
             }
 
-
             const competitionsContainer =
                 document.getElementById(
                     "competitionsContainer"
                 );
-
 
             if (competitionsContainer) {
 
@@ -1199,10 +1349,9 @@ if (backToCompetitions) {
 
 }
 
-
 /* =========================================================
    TEXTE PROGRESSION
-========================================================= */
+   ========================================================= */
 
 function getWatchProgressLabel(
     progress
@@ -1224,7 +1373,6 @@ function getWatchProgressLabel(
 
     };
 
-
     return (
         labels[
             String(progress)
@@ -1234,10 +1382,78 @@ function getWatchProgressLabel(
 
 }
 
+/* =========================================================
+   RÉCUPÉRER UN MATCH SAUVEGARDÉ
+   ========================================================= */
+
+function getSavedMatchData(
+    item
+) {
+
+    if (
+        item &&
+        item.matchData
+    ) {
+
+        return item.matchData;
+
+    }
+
+    return null;
+
+}
+
+/* =========================================================
+   TROUVER UN MATCH
+   ========================================================= */
+
+function findMatchById(
+    id
+) {
+
+    /*
+     * 1. Match actuellement chargé
+     */
+
+    const currentMatch =
+        allMatches.find(
+            function (match) {
+
+                return (
+                    Number(match.id) ===
+                    Number(id)
+                );
+
+            }
+        );
+
+    if (currentMatch) {
+        return currentMatch;
+    }
+
+    /*
+     * 2. Ancien match sauvegardé
+     */
+
+    const saved =
+        watchedMatches[id];
+
+    if (
+        saved &&
+        saved.matchData
+    ) {
+
+        return saved.matchData;
+
+    }
+
+    return null;
+
+}
 
 /* =========================================================
    CARTE MATCH
-========================================================= */
+   ========================================================= */
 
 function createMatchCard(
     match
@@ -1248,15 +1464,12 @@ function createMatchCard(
             match.id
         ];
 
-
     const favorite =
         favoritePlayers[
             match.id
         ] || "";
 
-
     let score = "-";
-
 
     if (
         match.homeScore !== null &&
@@ -1270,9 +1483,7 @@ function createMatchCard(
 
     }
 
-
     let favoriteHTML = "";
-
 
     if (favorite) {
 
@@ -1294,9 +1505,7 @@ function createMatchCard(
 
     }
 
-
     let progressHTML = "";
-
 
     if (
         watched &&
@@ -1331,7 +1540,6 @@ function createMatchCard(
 
     }
 
-
     return (
 
         '<div class="match-card" ' +
@@ -1339,7 +1547,6 @@ function createMatchCard(
         'onclick="openMatch(' +
         match.id +
         ')">' +
-
 
         '<div class="match-header">' +
 
@@ -1351,7 +1558,6 @@ function createMatchCard(
 
         "</span>" +
 
-
         "<span>" +
 
         formatTime(
@@ -1360,22 +1566,23 @@ function createMatchCard(
 
         "</span>" +
 
-
         "</div>" +
 
-
         '<div class="match-teams">' +
-
 
         '<div class="team">' +
 
         '<div class="team-logo">' +
 
-        '<img src="' +
-        escapeHTML(
+        (
             match.homeLogo
+                ? '<img src="' +
+                  escapeHTML(
+                      match.homeLogo
+                  ) +
+                  '" alt="">'
+                : "⚽"
         ) +
-        '" alt="">' +
 
         "</div>" +
 
@@ -1385,7 +1592,6 @@ function createMatchCard(
 
         "</div>" +
 
-
         "<div>" +
 
         '<div class="score">' +
@@ -1393,7 +1599,6 @@ function createMatchCard(
         score +
 
         "</div>" +
-
 
         '<div class="match-status">' +
 
@@ -1403,19 +1608,21 @@ function createMatchCard(
 
         "</div>" +
 
-
         "</div>" +
-
 
         '<div class="team">' +
 
         '<div class="team-logo">' +
 
-        '<img src="' +
-        escapeHTML(
+        (
             match.awayLogo
+                ? '<img src="' +
+                  escapeHTML(
+                      match.awayLogo
+                  ) +
+                  '" alt="">'
+                : "⚽"
         ) +
-        '" alt="">' +
 
         "</div>" +
 
@@ -1425,18 +1632,13 @@ function createMatchCard(
 
         "</div>" +
 
-
         "</div>" +
-
 
         favoriteHTML +
 
-
         progressHTML +
 
-
         '<div class="match-footer">' +
-
 
         (
             watched
@@ -1444,13 +1646,11 @@ function createMatchCard(
                 : '<span class="match-status">Pas encore enregistré</span>'
         ) +
 
-
         '<button class="watch-btn" ' +
 
         'onclick="event.stopPropagation(); openMatch(' +
         match.id +
         ')">' +
-
 
         (
             watched
@@ -1458,12 +1658,9 @@ function createMatchCard(
                 : "J'ai regardé"
         ) +
 
-
         "</button>" +
 
-
         "</div>" +
-
 
         "</div>"
 
@@ -1471,65 +1668,54 @@ function createMatchCard(
 
 }
 
-
 /* =========================================================
    OUVRIR MATCH
-========================================================= */
+   ========================================================= */
 
 async function openMatch(
     id
 ) {
 
     const match =
-        allMatches.find(
-            function (item) {
-
-                return (
-                    item.id === id
-                );
-
-            }
-        );
-
+        findMatchById(id);
 
     if (!match) {
-
         return;
-
     }
-
 
     const watched =
         watchedMatches[id];
 
-
     const favorite =
         favoritePlayers[id] ||
-        "";
-
+        (
+            watched
+                ? watched.favoritePlayer || ""
+                : ""
+        );
 
     const motm =
         officialMOTM[id] ||
-        "";
-
+        (
+            watched
+                ? watched.officialMOTM || ""
+                : ""
+        );
 
     let rating =
         watched
             ? watched.rating
             : "";
 
-
     let quality =
         watched
             ? watched.quality
             : "très bon";
 
-
     let comment =
         watched
             ? watched.comment
             : "";
-
 
     let watchProgress =
         watched &&
@@ -1539,9 +1725,7 @@ async function openMatch(
             )
             : "90";
 
-
     let score = "-";
-
 
     if (
         match.homeScore !== null &&
@@ -1555,19 +1739,14 @@ async function openMatch(
 
     }
 
-
     const content =
         document.getElementById(
             "modalContent"
         );
 
-
     if (!content) {
-
         return;
-
     }
-
 
     content.innerHTML =
 
@@ -1579,19 +1758,19 @@ async function openMatch(
 
         "</div>" +
 
-
         '<div class="modal-teams">' +
-
 
         '<div class="modal-team">' +
 
-        '<img src="' +
-
-        escapeHTML(
+        (
             match.homeLogo
+                ? '<img src="' +
+                  escapeHTML(
+                      match.homeLogo
+                  ) +
+                  '" alt="">'
+                : ""
         ) +
-
-        '" alt="">' +
 
         escapeHTML(
             match.home
@@ -1599,16 +1778,13 @@ async function openMatch(
 
         "</div>" +
 
-
         "<div>" +
-
 
         '<div class="modal-score">' +
 
         score +
 
         "</div>" +
-
 
         '<p class="match-status">' +
 
@@ -1624,19 +1800,19 @@ async function openMatch(
 
         "</p>" +
 
-
         "</div>" +
-
 
         '<div class="modal-team">' +
 
-        '<img src="' +
-
-        escapeHTML(
+        (
             match.awayLogo
+                ? '<img src="' +
+                  escapeHTML(
+                      match.awayLogo
+                  ) +
+                  '" alt="">'
+                : ""
         ) +
-
-        '" alt="">' +
 
         escapeHTML(
             match.away
@@ -1644,12 +1820,9 @@ async function openMatch(
 
         "</div>" +
 
-
         "</div>" +
 
-
         '<div class="info-list">' +
-
 
         '<div class="info-row">' +
 
@@ -1668,7 +1841,6 @@ async function openMatch(
 
         "</div>" +
 
-
         '<div class="info-row">' +
 
         "<span>Stade</span>" +
@@ -1676,16 +1848,15 @@ async function openMatch(
         "<strong>" +
 
         escapeHTML(
-            match.stadium
+            match.stadium ||
+            "Stade non renseigné"
         ) +
 
         "</strong>" +
 
         "</div>" +
 
-
         "</div>" +
-
 
         '<h3 class="sub-title">' +
 
@@ -1693,19 +1864,15 @@ async function openMatch(
 
         "</h3>" +
 
-
         '<div class="form-group">' +
 
-
-        '<label>' +
+        "<label>" +
 
         "Sélectionne le moment où tu as arrêté de regarder :" +
 
         "</label>" +
 
-
         '<select id="watchProgress" class="form-select">' +
-
 
         '<option value="22"' +
 
@@ -1717,7 +1884,6 @@ async function openMatch(
 
         ">⏱️ 22e minute</option>" +
 
-
         '<option value="45"' +
 
         (
@@ -1727,7 +1893,6 @@ async function openMatch(
         ) +
 
         ">⏱️ Mi-temps (45e)</option>" +
-
 
         '<option value="72"' +
 
@@ -1739,7 +1904,6 @@ async function openMatch(
 
         ">⏱️ 72e minute</option>" +
 
-
         '<option value="90"' +
 
         (
@@ -1750,9 +1914,7 @@ async function openMatch(
 
         ">🏁 Match terminé</option>" +
 
-
         "</select>" +
-
 
         '<div id="goalsPreview" class="favorite-box" style="margin-top:10px;">' +
 
@@ -1760,9 +1922,7 @@ async function openMatch(
 
         "</div>" +
 
-
         "</div>" +
-
 
         '<h3 class="sub-title">' +
 
@@ -1770,9 +1930,7 @@ async function openMatch(
 
         "</h3>" +
 
-
         '<div class="form-group">' +
-
 
         "<label>" +
 
@@ -1780,9 +1938,7 @@ async function openMatch(
 
         "</label>" +
 
-
         '<div id="playerChoices" class="player-choice-grid">' +
-
 
         '<div class="loading">' +
 
@@ -1790,19 +1946,15 @@ async function openMatch(
 
         "</div>" +
 
-
         "</div>" +
 
-
         "</div>" +
-
 
         '<h3 class="sub-title">' +
 
         "🏅 Homme du match officiel" +
 
         "</h3>" +
-
 
         '<div id="officialMOTMBox" class="favorite-box">' +
 
@@ -1815,23 +1967,19 @@ async function openMatch(
 
         "</div>" +
 
-
         '<h3 class="sub-title">' +
 
         "Mon avis" +
 
         "</h3>" +
 
-
         '<div class="form-group">' +
-
 
         "<label>" +
 
         "Note du match /10" +
 
         "</label>" +
-
 
         '<input id="rating" ' +
 
@@ -1853,12 +2001,9 @@ async function openMatch(
 
         '">' +
 
-
         "</div>" +
 
-
         '<div class="form-group">' +
-
 
         "<label>" +
 
@@ -1866,9 +2011,7 @@ async function openMatch(
 
         "</label>" +
 
-
         '<select id="quality" class="form-select">' +
-
 
         '<option value="exceptionnel"' +
 
@@ -1881,7 +2024,6 @@ async function openMatch(
 
         ">🔥 Exceptionnel</option>" +
 
-
         '<option value="très bon"' +
 
         (
@@ -1892,7 +2034,6 @@ async function openMatch(
         ) +
 
         ">⭐ Très bon</option>" +
-
 
         '<option value="moyen"' +
 
@@ -1905,7 +2046,6 @@ async function openMatch(
 
         ">😐 Moyen</option>" +
 
-
         '<option value="mauvais"' +
 
         (
@@ -1917,15 +2057,11 @@ async function openMatch(
 
         ">👎 Mauvais</option>" +
 
-
         "</select>" +
-
 
         "</div>" +
 
-
         '<div class="form-group">' +
-
 
         "<label>" +
 
@@ -1933,24 +2069,19 @@ async function openMatch(
 
         "</label>" +
 
-
         '<textarea id="comment" ' +
 
         'class="form-textarea" ' +
 
         'placeholder="Ton avis sur le match...">' +
 
-
         escapeHTML(
             comment
         ) +
 
-
         "</textarea>" +
 
-
         "</div>" +
-
 
         '<button class="primary-btn" ' +
 
@@ -1958,48 +2089,40 @@ async function openMatch(
         match.id +
         ')">' +
 
-
         "💾 Enregistrer" +
-
 
         "</button>";
 
-
-    document
-        .getElementById(
+    const modal =
+        document.getElementById(
             "matchModal"
-        )
-        .classList.add(
+        );
+
+    if (modal) {
+
+        modal.classList.add(
             "show"
         );
 
+    }
 
     loadPlayersForMatch(
         match,
         favorite
     );
 
-
-    /*
-     * On charge les informations
-     * complémentaires du match.
-     */
-
     loadOfficialMOTM(
         match
     );
-
 
     updateGoalsPreview(
         match
     );
 
-
     const progressSelect =
         document.getElementById(
             "watchProgress"
         );
-
 
     if (progressSelect) {
 
@@ -2018,10 +2141,9 @@ async function openMatch(
 
 }
 
-
 /* =========================================================
    CHARGER LES JOUEURS
-========================================================= */
+   ========================================================= */
 
 async function loadPlayersForMatch(
     match,
@@ -2033,13 +2155,9 @@ async function loadPlayersForMatch(
             "playerChoices"
         );
 
-
     if (!container) {
-
         return;
-
     }
-
 
     try {
 
@@ -2064,9 +2182,7 @@ async function loadPlayersForMatch(
 
         ]);
 
-
         const players = [];
-
 
         function addPlayers(
             data,
@@ -2075,7 +2191,6 @@ async function loadPlayersForMatch(
 
             const response =
                 data.response || [];
-
 
             response.forEach(
                 function (item) {
@@ -2108,25 +2223,20 @@ async function loadPlayersForMatch(
 
         }
 
-
         addPlayers(
             homeData,
             match.home
         );
-
 
         addPlayers(
             awayData,
             match.away
         );
 
-
         const uniquePlayers = [];
-
 
         const ids =
             new Set();
-
 
         players.forEach(
             function (player) {
@@ -2141,7 +2251,6 @@ async function loadPlayersForMatch(
                         player.id
                     );
 
-
                     uniquePlayers.push(
                         player
                     );
@@ -2150,7 +2259,6 @@ async function loadPlayersForMatch(
 
             }
         );
-
 
         uniquePlayers.sort(
             function (a, b) {
@@ -2163,20 +2271,16 @@ async function loadPlayersForMatch(
             }
         );
 
-
         if (!uniquePlayers.length) {
 
             container.innerHTML =
                 '<div class="empty">' +
-
                 "Aucun joueur disponible pour ce match." +
-
                 "</div>";
 
             return;
 
         }
-
 
         container.innerHTML =
             uniquePlayers
@@ -2186,7 +2290,6 @@ async function loadPlayersForMatch(
                         const selected =
                             selectedPlayer ===
                             player.name;
-
 
                         return (
 
@@ -2234,14 +2337,12 @@ async function loadPlayersForMatch(
                 )
                 .join("");
 
-
     } catch (error) {
 
         console.error(
             "Erreur joueurs :",
             error
         );
-
 
         container.innerHTML =
             '<div class="empty">' +
@@ -2258,10 +2359,9 @@ async function loadPlayersForMatch(
 
 }
 
-
 /* =========================================================
    CHOISIR JOUEUR
-========================================================= */
+   ========================================================= */
 
 function selectPlayer(
     button
@@ -2281,17 +2381,15 @@ function selectPlayer(
             }
         );
 
-
     button.classList.add(
         "selected"
     );
 
 }
 
-
 /* =========================================================
-   RÉCUPÉRER LES ÉVÉNEMENTS DU MATCH
-========================================================= */
+   RÉCUPÉRER LES ÉVÉNEMENTS
+   ========================================================= */
 
 async function getMatchEvents(
     fixtureId
@@ -2303,26 +2401,21 @@ async function getMatchEvents(
             fixtureId
         );
 
-
     return data.response || [];
 
 }
 
-
 /* =========================================================
-   VÉRIFIER SI UN ÉVÉNEMENT EST UN BUT
-========================================================= */
+   VÉRIFIER BUT
+   ========================================================= */
 
 function isGoalEvent(
     event
 ) {
 
     if (!event) {
-
         return false;
-
     }
-
 
     if (
         event.type !==
@@ -2333,16 +2426,6 @@ function isGoalEvent(
 
     }
 
-
-    /*
-     * On exclut les penalties
-     * uniquement s'ils sont des tirs
-     * au but après prolongation.
-     *
-     * Un penalty marqué pendant le
-     * match reste bien un but.
-     */
-
     if (
         event.detail ===
         "Missed Penalty"
@@ -2351,7 +2434,6 @@ function isGoalEvent(
         return false;
 
     }
-
 
     if (
         event.detail ===
@@ -2362,15 +2444,13 @@ function isGoalEvent(
 
     }
 
-
     return true;
 
 }
 
-
 /* =========================================================
-   MINUTE RÉELLE D'UN ÉVÉNEMENT
-========================================================= */
+   MINUTE RÉELLE
+   ========================================================= */
 
 function getEventMinute(
     event
@@ -2385,24 +2465,15 @@ function getEventMinute(
 
     }
 
-
     const elapsed =
         Number(
             event.time.elapsed
         ) || 0;
 
-
     const extra =
         Number(
             event.time.extra
         ) || 0;
-
-
-    /*
-     * Exemple :
-     * 45+2 devient 47.
-     * 90+4 devient 94.
-     */
 
     return (
         elapsed +
@@ -2411,10 +2482,9 @@ function getEventMinute(
 
 }
 
-
 /* =========================================================
    CALCULER LES BUTS VUS
-========================================================= */
+   ========================================================= */
 
 function calculateGoalsSeen(
     events,
@@ -2422,7 +2492,6 @@ function calculateGoalsSeen(
 ) {
 
     let goals = 0;
-
 
     events.forEach(
         function (event) {
@@ -2437,12 +2506,10 @@ function calculateGoalsSeen(
 
             }
 
-
             const minute =
                 getEventMinute(
                     event
                 );
-
 
             if (
                 minute <=
@@ -2456,15 +2523,13 @@ function calculateGoalsSeen(
         }
     );
 
-
     return goals;
 
 }
 
-
 /* =========================================================
-   METTRE À JOUR L'APERÇU DES BUTS
-========================================================= */
+   APERÇU BUTS
+   ========================================================= */
 
 async function updateGoalsPreview(
     match
@@ -2475,12 +2540,10 @@ async function updateGoalsPreview(
             "goalsPreview"
         );
 
-
     const select =
         document.getElementById(
             "watchProgress"
         );
-
 
     if (
         !preview ||
@@ -2491,16 +2554,13 @@ async function updateGoalsPreview(
 
     }
 
-
     const progress =
         Number(
             select.value
         );
 
-
     preview.innerHTML =
         "⏳ Calcul des buts vus...";
-
 
     try {
 
@@ -2509,13 +2569,11 @@ async function updateGoalsPreview(
                 match.id
             );
 
-
         const goals =
             calculateGoalsSeen(
                 events,
                 progress
             );
-
 
         preview.innerHTML =
 
@@ -2544,7 +2602,6 @@ async function updateGoalsPreview(
             error
         );
 
-
         preview.innerHTML =
             "⚠️ Impossible de calculer les buts vus pour le moment.";
 
@@ -2552,10 +2609,9 @@ async function updateGoalsPreview(
 
 }
 
-
 /* =========================================================
    HOMME DU MATCH OFFICIEL
-========================================================= */
+   ========================================================= */
 
 async function loadOfficialMOTM(
     match
@@ -2566,18 +2622,9 @@ async function loadOfficialMOTM(
             "officialMOTMBox"
         );
 
-
     if (!box) {
-
         return;
-
     }
-
-
-    /*
-     * Si déjà enregistré localement,
-     * on l'affiche directement.
-     */
 
     if (
         officialMOTM[match.id]
@@ -2594,14 +2641,7 @@ async function loadOfficialMOTM(
 
     }
 
-
     try {
-
-        /*
-         * API-Football fournit les
-         * statistiques des joueurs
-         * du match.
-         */
 
         const data =
             await apiRequest(
@@ -2609,18 +2649,14 @@ async function loadOfficialMOTM(
                 match.id
             );
 
-
         const response =
             data.response || [];
-
 
         let bestPlayer =
             null;
 
-
         let bestRating =
             -1;
-
 
         response.forEach(
             function (teamData) {
@@ -2628,7 +2664,6 @@ async function loadOfficialMOTM(
                 const players =
                     teamData.players ||
                     [];
-
 
                 players.forEach(
                     function (item) {
@@ -2642,7 +2677,6 @@ async function loadOfficialMOTM(
 
                         }
 
-
                         const rating =
                             item.statistics &&
                             item.statistics[0] &&
@@ -2653,7 +2687,6 @@ async function loadOfficialMOTM(
                                 )
                                 : 0;
 
-
                         if (
                             rating >
                             bestRating
@@ -2661,7 +2694,6 @@ async function loadOfficialMOTM(
 
                             bestRating =
                                 rating;
-
 
                             bestPlayer =
                                 item.player.name;
@@ -2674,26 +2706,19 @@ async function loadOfficialMOTM(
             }
         );
 
-
         if (bestPlayer) {
 
             officialMOTM[match.id] =
                 bestPlayer;
 
-
             saveData();
 
-
             box.innerHTML =
-
                 "🏅 Homme du match officiel : " +
-
                 "<strong>" +
-
                 escapeHTML(
                     bestPlayer
                 ) +
-
                 "</strong>";
 
         } else {
@@ -2710,7 +2735,6 @@ async function loadOfficialMOTM(
             error
         );
 
-
         box.innerHTML =
             "🏅 Homme du match officiel : non disponible pour ce match.";
 
@@ -2718,10 +2742,86 @@ async function loadOfficialMOTM(
 
 }
 
+/* =========================================================
+   🔒 CRÉER COPIE DU MATCH
+   ========================================================= */
+
+function createMatchData(
+    match,
+    previousMatchData
+) {
+
+    /*
+     * IMPORTANT :
+     * On fusionne l'ancienne copie avec
+     * les nouvelles informations.
+     *
+     * Ainsi, aucune propriété existante
+     * n'est volontairement supprimée.
+     */
+
+    return {
+
+        ...(previousMatchData || {}),
+
+        id:
+            match.id,
+
+        date:
+            match.date,
+
+        status:
+            match.status,
+
+        competition:
+            match.competition,
+
+        leagueId:
+            match.leagueId,
+
+        season:
+            match.season,
+
+        country:
+            match.country,
+
+        leagueLogo:
+            match.leagueLogo,
+
+        home:
+            match.home,
+
+        away:
+            match.away,
+
+        homeId:
+            match.homeId,
+
+        awayId:
+            match.awayId,
+
+        homeLogo:
+            match.homeLogo,
+
+        awayLogo:
+            match.awayLogo,
+
+        homeScore:
+            match.homeScore,
+
+        awayScore:
+            match.awayScore,
+
+        stadium:
+            match.stadium
+
+    };
+
+}
 
 /* =========================================================
-   SAUVEGARDER MATCH
-========================================================= */
+   🔒 SAUVEGARDER MATCH
+   ========================================================= */
 
 async function saveMatch(
     id
@@ -2732,30 +2832,25 @@ async function saveMatch(
             "rating"
         );
 
-
     const qualityInput =
         document.getElementById(
             "quality"
         );
-
 
     const commentInput =
         document.getElementById(
             "comment"
         );
 
-
     const progressInput =
         document.getElementById(
             "watchProgress"
         );
 
-
     const selectedPlayer =
         document.querySelector(
             ".player-choice.selected"
         );
-
 
     if (
         !ratingInput ||
@@ -2768,12 +2863,10 @@ async function saveMatch(
 
     }
 
-
     const rating =
         parseFloat(
             ratingInput.value
         );
-
 
     if (
         isNaN(rating) ||
@@ -2789,47 +2882,58 @@ async function saveMatch(
 
     }
 
-
     const favorite =
         selectedPlayer
             ? selectedPlayer.dataset.player
             : "";
-
 
     const watchProgress =
         Number(
             progressInput.value
         );
 
-
-    const match =
-        allMatches.find(
-            function (item) {
-
-                return (
-                    item.id ===
-                    id
-                );
-
-            }
-        );
-
-
-    if (!match) {
-
-        return;
-
-    }
-
-
     /*
-     * On récupère les événements
-     * afin de déterminer exactement
-     * combien de buts ont été vus.
+     * On récupère d'abord le match actuel.
      */
 
-    let goalsSeen = 0;
+    const match =
+        findMatchById(id);
 
+    /*
+     * Si le match n'est plus dans l'API,
+     * findMatchById() récupère sa copie
+     * sauvegardée.
+     */
+
+    if (!match) {
+        return;
+    }
+
+    /*
+     * 🔒 ON GARDE L'ANCIEN ENREGISTREMENT
+     */
+
+    const previousMatch =
+        watchedMatches[id] || {};
+
+    /*
+     * 🔒 ON GARDE L'ANCIEN MATCHDATA
+     */
+
+    const previousMatchData =
+        previousMatch.matchData ||
+        {};
+
+    let goalsSeen =
+        previousMatch.goalsSeen !== undefined
+            ? Number(
+                previousMatch.goalsSeen
+            )
+            : 0;
+
+    /*
+     * On essaie de recalculer les buts.
+     */
 
     try {
 
@@ -2837,7 +2941,6 @@ async function saveMatch(
             await getMatchEvents(
                 id
             );
-
 
         goalsSeen =
             calculateGoalsSeen(
@@ -2852,54 +2955,95 @@ async function saveMatch(
             error
         );
 
-
         /*
-         * Si l'API ne répond pas,
-         * on ne prétend pas connaître
-         * le nombre de buts vus.
+         * Si l'API ne répond plus,
+         * on conserve l'ancienne valeur.
          */
 
         goalsSeen =
-            watchedMatches[id] &&
-            watchedMatches[id].goalsSeen !== undefined
-                ? watchedMatches[id].goalsSeen
+            previousMatch.goalsSeen !== undefined
+                ? previousMatch.goalsSeen
                 : 0;
 
     }
 
+    /*
+     * Joueur préféré
+     */
 
     if (favorite) {
 
         favoritePlayers[id] =
             favorite;
 
-    } else {
+    } else if (
+        previousMatch.favoritePlayer
+    ) {
 
-        delete favoritePlayers[id];
+        /*
+         * 🔒 On conserve l'ancien joueur
+         * si l'utilisateur n'en sélectionne
+         * pas un nouveau.
+         */
+
+        favoritePlayers[id] =
+            previousMatch.favoritePlayer;
 
     }
 
+    /*
+     * 🔒 MATCHDATA PROTÉGÉ
+     */
+
+    const matchData =
+        createMatchData(
+            match,
+            previousMatchData
+        );
+
+    /*
+     * 🔒 FUSION COMPLÈTE
+     *
+     * Le ...previousMatch garantit que
+     * toute donnée ancienne inconnue
+     * reste présente.
+     */
 
     watchedMatches[id] = {
 
+        ...previousMatch,
+
         matchId:
             id,
+
+        matchData:
+            matchData,
 
         rating:
             rating,
 
         favoritePlayer:
-            favorite,
+            favorite ||
+            previousMatch.favoritePlayer ||
+            "",
 
         officialMOTM:
             officialMOTM[id] ||
+            previousMatch.officialMOTM ||
             "",
 
         quality:
-            qualityInput.value,
+            qualityInput.value ||
+            previousMatch.quality ||
+            "très bon",
 
         comment:
-            commentInput.value,
+            commentInput.value !== ""
+                ? commentInput.value
+                : (
+                    previousMatch.comment ||
+                    ""
+                ),
 
         watchProgress:
             watchProgress,
@@ -2908,34 +3052,36 @@ async function saveMatch(
             goalsSeen,
 
         watchedAt:
+            previousMatch.watchedAt ||
             new Date().toISOString()
 
     };
 
+    /*
+     * 🔒 SAUVEGARDE IMMÉDIATE
+     *
+     * À partir d'ici, le match est
+     * conservé même si l'API ne le
+     * renvoie plus dans le futur.
+     */
 
     saveData();
 
-
     closeModal();
-
 
     renderCurrentCompetition();
 
-
     renderHistory();
 
-
     renderStats();
-
 
     renderAwards();
 
 }
 
-
 /* =========================================================
-   RENDRE LES MATCHS ACTUELS
-========================================================= */
+   RENDRE MATCHS ACTUELS
+   ========================================================= */
 
 function renderCurrentCompetition() {
 
@@ -2950,17 +3096,15 @@ function renderCurrentCompetition() {
 
     }
 
-
     openCompetition(
         selectedCompetition
     );
 
 }
 
-
 /* =========================================================
    MODAL
-========================================================= */
+   ========================================================= */
 
 function closeModal() {
 
@@ -2968,7 +3112,6 @@ function closeModal() {
         document.getElementById(
             "matchModal"
         );
-
 
     if (modal) {
 
@@ -2980,12 +3123,10 @@ function closeModal() {
 
 }
 
-
 const closeModalButton =
     document.getElementById(
         "closeModal"
     );
-
 
 if (closeModalButton) {
 
@@ -2996,12 +3137,10 @@ if (closeModalButton) {
 
 }
 
-
 const matchModal =
     document.getElementById(
         "matchModal"
     );
-
 
 if (matchModal) {
 
@@ -3023,10 +3162,9 @@ if (matchModal) {
 
 }
 
-
 /* =========================================================
    NAVIGATION
-========================================================= */
+   ========================================================= */
 
 document
     .querySelectorAll(
@@ -3042,7 +3180,6 @@ document
                     const page =
                         button.dataset.page;
 
-
                     document
                         .querySelectorAll(
                             ".page"
@@ -3057,12 +3194,10 @@ document
                             }
                         );
 
-
                     const target =
                         document.getElementById(
                             page
                         );
-
 
                     if (target) {
 
@@ -3071,7 +3206,6 @@ document
                         );
 
                     }
-
 
                     document
                         .querySelectorAll(
@@ -3087,11 +3221,9 @@ document
                             }
                         );
 
-
                     button.classList.add(
                         "active"
                     );
-
 
                     if (
                         page ===
@@ -3102,7 +3234,6 @@ document
 
                     }
 
-
                     if (
                         page ===
                         "stats"
@@ -3111,7 +3242,6 @@ document
                         renderStats();
 
                     }
-
 
                     if (
                         page ===
@@ -3128,16 +3258,14 @@ document
         }
     );
 
-
 /* =========================================================
    JOUR PRÉCÉDENT
-========================================================= */
+   ========================================================= */
 
 const previousDay =
     document.getElementById(
         "previousDay"
     );
-
 
 if (previousDay) {
 
@@ -3150,9 +3278,7 @@ if (previousDay) {
                 1
             );
 
-
             updateSelectedDateDisplay();
-
 
             loadMatches();
 
@@ -3161,16 +3287,14 @@ if (previousDay) {
 
 }
 
-
 /* =========================================================
    JOUR SUIVANT
-========================================================= */
+   ========================================================= */
 
 const nextDay =
     document.getElementById(
         "nextDay"
     );
-
 
 if (nextDay) {
 
@@ -3183,9 +3307,7 @@ if (nextDay) {
                 1
             );
 
-
             updateSelectedDateDisplay();
-
 
             loadMatches();
 
@@ -3194,16 +3316,14 @@ if (nextDay) {
 
 }
 
-
 /* =========================================================
    ACTUALISER
-========================================================= */
+   ========================================================= */
 
 const refreshBtn =
     document.getElementById(
         "refreshBtn"
     );
-
 
 if (refreshBtn) {
 
@@ -3218,10 +3338,9 @@ if (refreshBtn) {
 
 }
 
-
 /* =========================================================
    HISTORIQUE
-========================================================= */
+   ========================================================= */
 
 function renderHistory() {
 
@@ -3230,33 +3349,25 @@ function renderHistory() {
             "historyContainer"
         );
 
-
     if (!container) {
-
         return;
-
     }
-
 
     const saved =
         Object.values(
             watchedMatches
         );
 
-
     if (!saved.length) {
 
         container.innerHTML =
             '<div class="empty">' +
-
             "Aucun match enregistré." +
-
             "</div>";
 
         return;
 
     }
-
 
     container.innerHTML =
         saved
@@ -3277,66 +3388,73 @@ function renderHistory() {
             .map(
                 function (item) {
 
+                    /*
+                     * 🔒 On cherche le match actuel.
+                     * S'il n'existe plus, findMatchById()
+                     * utilise automatiquement matchData.
+                     */
+
                     const match =
-                        allMatches.find(
-                            function (m) {
-
-                                return (
-                                    m.id ===
-                                    item.matchId
-                                );
-
-                            }
+                        findMatchById(
+                            item.matchId
                         );
 
+                    const savedMatch =
+                        item.matchData ||
+                        {};
+
+                    const home =
+                        match
+                            ? match.home
+                            : savedMatch.home ||
+                              "Match";
+
+                    const away =
+                        match
+                            ? match.away
+                            : savedMatch.away ||
+                              "";
+
+                    const competition =
+                        match
+                            ? match.competition
+                            : savedMatch.competition ||
+                              "Compétition inconnue";
 
                     const favorite =
                         item.favoritePlayer ||
                         "Aucun joueur sélectionné";
 
-
                     const comment =
                         item.comment ||
                         "";
-
 
                     return (
 
                         '<div class="history-card">' +
 
-
                         '<div class="history-main">' +
-
 
                         "<strong>" +
 
-                        (
-                            match
-
-                                ? escapeHTML(
-                                    match.home +
-                                    " - " +
-                                    match.away
-                                )
-
-                                : "Match enregistré"
+                        escapeHTML(
+                            home +
+                            (
+                                away
+                                    ? " - " + away
+                                    : ""
+                            )
                         ) +
 
                         "</strong>" +
 
+                        "<span>" +
 
-                        (
-                            match
-
-                                ? "<span>" +
-                                  escapeHTML(
-                                      match.competition
-                                  ) +
-                                  "</span>"
-
-                                : ""
+                        escapeHTML(
+                            competition
                         ) +
 
+                        "</span>" +
 
                         "<span>" +
 
@@ -3347,7 +3465,6 @@ function renderHistory() {
                         ) +
 
                         "</span>" +
-
 
                         (
                             item.officialMOTM
@@ -3360,7 +3477,6 @@ function renderHistory() {
 
                                 : ""
                         ) +
-
 
                         (
                             item.watchProgress
@@ -3376,7 +3492,6 @@ function renderHistory() {
                                 : ""
                         ) +
 
-
                         (
                             item.goalsSeen !== undefined
 
@@ -3386,7 +3501,6 @@ function renderHistory() {
 
                                 : ""
                         ) +
-
 
                         (
                             comment
@@ -3400,9 +3514,7 @@ function renderHistory() {
                                 : ""
                         ) +
 
-
                         "</div>" +
-
 
                         '<div class="rating">' +
 
@@ -3416,7 +3528,6 @@ function renderHistory() {
 
                         "</div>" +
 
-
                         "</div>"
 
                     );
@@ -3427,10 +3538,9 @@ function renderHistory() {
 
 }
 
-
 /* =========================================================
    STATISTIQUES
-========================================================= */
+   ========================================================= */
 
 function renderStats() {
 
@@ -3439,76 +3549,52 @@ function renderStats() {
             watchedMatches
         );
 
-
     const statsContainer =
         document.getElementById(
             "statsContainer"
         );
 
-
     if (!statsContainer) {
-
         return;
-
     }
-
 
     if (!saved.length) {
 
         statsContainer.innerHTML =
             '<div class="empty">' +
-
             "Regarde et note des matchs pour voir tes statistiques." +
-
             "</div>";
-
 
         const competitionStats =
             document.getElementById(
                 "competitionStats"
             );
 
-
         const monthlyStats =
             document.getElementById(
                 "monthlyStats"
             );
-
 
         const seasonStats =
             document.getElementById(
                 "seasonStats"
             );
 
-
         if (competitionStats) {
-
-            competitionStats.innerHTML =
-                "";
-
+            competitionStats.innerHTML = "";
         }
-
 
         if (monthlyStats) {
-
-            monthlyStats.innerHTML =
-                "";
-
+            monthlyStats.innerHTML = "";
         }
-
 
         if (seasonStats) {
-
-            seasonStats.innerHTML =
-                "";
-
+            seasonStats.innerHTML = "";
         }
-
 
         return;
 
     }
-
 
     const ratings =
         saved.map(
@@ -3521,7 +3607,6 @@ function renderStats() {
             }
         );
 
-
     const totalRatings =
         ratings.reduce(
             function (a, b) {
@@ -3532,40 +3617,22 @@ function renderStats() {
             0
         );
 
-
     const average =
         totalRatings /
         ratings.length;
-
 
     const best =
         Math.max(
             ...ratings
         );
 
-
     const worst =
         Math.min(
             ...ratings
         );
 
-
-    /*
-     * IMPORTANT :
-     *
-     * On utilise goalsSeen enregistré
-     * au moment où le match a été
-     * sauvegardé.
-     *
-     * Donc un match final 2-1,
-     * regardé jusqu'à la mi-temps
-     * avec un score de 1-0,
-     * compte seulement 1 but.
-     */
-
     let totalGoals =
         0;
-
 
     saved.forEach(
         function (item) {
@@ -3584,54 +3651,44 @@ function renderStats() {
         }
     );
 
-
     statsContainer.innerHTML =
 
         '<div class="stat-grid">' +
-
 
         createStat(
             saved.length,
             "Matchs vus"
         ) +
 
-
         createStat(
             average.toFixed(1),
             "Moyenne de mes notes"
         ) +
-
 
         createStat(
             best.toFixed(1),
             "⭐ Meilleure note"
         ) +
 
-
         createStat(
             worst.toFixed(1),
             "😬 Pire note"
         ) +
-
 
         createStat(
             totalGoals,
             "⚽ Buts vus"
         ) +
 
-
         "</div>";
-
 
     renderCompetitionStats(
         saved
     );
 
-
     renderMonthlyStats(
         saved
     );
-
 
     renderSeasonStats(
         saved
@@ -3639,10 +3696,9 @@ function renderStats() {
 
 }
 
-
 /* =========================================================
    CRÉER STAT
-========================================================= */
+   ========================================================= */
 
 function createStat(
     number,
@@ -3675,10 +3731,9 @@ function createStat(
 
 }
 
-
 /* =========================================================
    STATS COMPÉTITIONS
-========================================================= */
+   ========================================================= */
 
 function renderCompetitionStats(
     saved
@@ -3689,43 +3744,27 @@ function renderCompetitionStats(
             "competitionStats"
         );
 
-
     if (!container) {
-
         return;
-
     }
 
-
     const groups = {};
-
 
     saved.forEach(
         function (item) {
 
             const match =
-                allMatches.find(
-                    function (m) {
-
-                        return (
-                            m.id ===
-                            item.matchId
-                        );
-
-                    }
+                findMatchById(
+                    item.matchId
                 );
 
-
             if (!match) {
-
                 return;
-
             }
 
-
             const name =
-                match.competition;
-
+                match.competition ||
+                "Compétition inconnue";
 
             if (!groups[name]) {
 
@@ -3739,9 +3778,7 @@ function renderCompetitionStats(
 
             }
 
-
             groups[name].count++;
-
 
             groups[name].total +=
                 Number(
@@ -3751,26 +3788,21 @@ function renderCompetitionStats(
         }
     );
 
-
     const entries =
         Object.entries(
             groups
         );
 
-
     if (!entries.length) {
 
         container.innerHTML =
             '<div class="empty">' +
-
             "Pas encore de données." +
-
             "</div>";
 
         return;
 
     }
-
 
     container.innerHTML =
         entries
@@ -3801,7 +3833,6 @@ function renderCompetitionStats(
 
                         "</strong>" +
 
-
                         '<div class="stat-line">' +
 
                         "<span>Matchs vus</span>" +
@@ -3813,7 +3844,6 @@ function renderCompetitionStats(
                         "</strong>" +
 
                         "</div>" +
-
 
                         '<div class="stat-line">' +
 
@@ -3830,7 +3860,6 @@ function renderCompetitionStats(
 
                         "</div>" +
 
-
                         "</div>"
 
                     );
@@ -3841,10 +3870,9 @@ function renderCompetitionStats(
 
 }
 
-
 /* =========================================================
    STATS MOIS
-========================================================= */
+   ========================================================= */
 
 function renderMonthlyStats(
     saved
@@ -3855,32 +3883,23 @@ function renderMonthlyStats(
             "monthlyStats"
         );
 
-
     if (!container) {
-
         return;
-
     }
 
-
     const groups = {};
-
 
     saved.forEach(
         function (item) {
 
             if (!item.watchedAt) {
-
                 return;
-
             }
-
 
             const date =
                 new Date(
                     item.watchedAt
                 );
-
 
             const key =
                 date.toLocaleDateString(
@@ -3891,19 +3910,14 @@ function renderMonthlyStats(
                     }
                 );
 
-
             if (!groups[key]) {
-
                 groups[key] = 0;
-
             }
-
 
             groups[key]++;
 
         }
     );
-
 
     container.innerHTML =
         Object.entries(
@@ -3940,10 +3954,9 @@ function renderMonthlyStats(
 
 }
 
-
 /* =========================================================
    STATS SAISONS
-========================================================= */
+   ========================================================= */
 
 function renderSeasonStats(
     saved
@@ -3954,57 +3967,36 @@ function renderSeasonStats(
             "seasonStats"
         );
 
-
     if (!container) {
-
         return;
-
     }
 
-
     const groups = {};
-
 
     saved.forEach(
         function (item) {
 
             const match =
-                allMatches.find(
-                    function (m) {
-
-                        return (
-                            m.id ===
-                            item.matchId
-                        );
-
-                    }
+                findMatchById(
+                    item.matchId
                 );
 
-
             if (!match) {
-
                 return;
-
             }
-
 
             const season =
                 match.season ||
                 "Inconnue";
 
-
             if (!groups[season]) {
-
                 groups[season] = 0;
-
             }
-
 
             groups[season]++;
 
         }
     );
-
 
     container.innerHTML =
         Object.entries(
@@ -4043,10 +4035,9 @@ function renderSeasonStats(
 
 }
 
-
 /* =========================================================
    PALMARÈS
-========================================================= */
+   ========================================================= */
 
 function renderAwards() {
 
@@ -4055,19 +4046,14 @@ function renderAwards() {
             "awardsContainer"
         );
 
-
     if (!container) {
-
         return;
-
     }
-
 
     const saved =
         Object.values(
             watchedMatches
         );
-
 
     if (!saved.length) {
 
@@ -4091,7 +4077,6 @@ function renderAwards() {
                 }
             );
 
-
         const average =
             ratings.reduce(
                 function (a, b) {
@@ -4102,7 +4087,6 @@ function renderAwards() {
                 0
             ) /
             ratings.length;
-
 
         const totalGoals =
             saved.reduce(
@@ -4123,7 +4107,6 @@ function renderAwards() {
                 0
             );
 
-
         container.innerHTML =
 
             '<div class="award-card">' +
@@ -4137,7 +4120,6 @@ function renderAwards() {
             "</strong>" +
 
             "</div>" +
-
 
             '<div class="award-card">' +
 
@@ -4153,7 +4135,6 @@ function renderAwards() {
 
             "</div>" +
 
-
             '<div class="award-card">' +
 
             "📊 Moyenne générale : " +
@@ -4165,7 +4146,6 @@ function renderAwards() {
             "/10</strong>" +
 
             "</div>" +
-
 
             '<div class="award-card">' +
 
@@ -4181,15 +4161,13 @@ function renderAwards() {
 
     }
 
-
     renderPlayersRanking();
 
 }
 
-
 /* =========================================================
    JOUEURS PRÉFÉRÉS
-========================================================= */
+   ========================================================= */
 
 function renderPlayersRanking() {
 
@@ -4198,16 +4176,11 @@ function renderPlayersRanking() {
             "playersRanking"
         );
 
-
     if (!container) {
-
         return;
-
     }
 
-
     const counts = {};
-
 
     Object.values(
         watchedMatches
@@ -4234,7 +4207,6 @@ function renderPlayersRanking() {
         }
     );
 
-
     const players =
         Object.entries(
             counts
@@ -4246,7 +4218,6 @@ function renderPlayersRanking() {
 
             }
         );
-
 
     if (!players.length) {
 
@@ -4260,7 +4231,6 @@ function renderPlayersRanking() {
         return;
 
     }
-
 
     container.innerHTML =
         players
@@ -4282,7 +4252,6 @@ function renderPlayersRanking() {
 
                         "</div>" +
 
-
                         '<div class="player-info">' +
 
                         "<strong>" +
@@ -4292,7 +4261,6 @@ function renderPlayersRanking() {
                         ) +
 
                         "</strong>" +
-
 
                         "<span>" +
 
@@ -4306,9 +4274,7 @@ function renderPlayersRanking() {
 
                         "</span>" +
 
-
                         "</div>" +
-
 
                         "</div>"
 
@@ -4320,16 +4286,14 @@ function renderPlayersRanking() {
 
 }
 
-
 /* =========================================================
    RECHERCHE HISTORIQUE
-========================================================= */
+   ========================================================= */
 
 const searchInput =
     document.getElementById(
         "searchInput"
     );
-
 
 if (searchInput) {
 
@@ -4342,42 +4306,32 @@ if (searchInput) {
                     .trim()
                     .toLowerCase();
 
-
             const container =
                 document.getElementById(
                     "historyContainer"
                 );
 
-
             if (!container) {
-
                 return;
-
             }
-
 
             const saved =
                 Object.values(
                     watchedMatches
                 );
 
-
             const filtered =
                 saved.filter(
                     function (item) {
 
                         const match =
-                            allMatches.find(
-                                function (m) {
-
-                                    return (
-                                        m.id ===
-                                        item.matchId
-                                    );
-
-                                }
+                            findMatchById(
+                                item.matchId
                             );
 
+                        const savedMatch =
+                            item.matchData ||
+                            {};
 
                         const text = [
 
@@ -4389,20 +4343,19 @@ if (searchInput) {
 
                             match
                                 ? match.home
-                                : "",
+                                : savedMatch.home,
 
                             match
                                 ? match.away
-                                : "",
+                                : savedMatch.away,
 
                             match
                                 ? match.competition
-                                : ""
+                                : savedMatch.competition
 
                         ]
                         .join(" ")
                         .toLowerCase();
-
 
                         return text.includes(
                             query
@@ -4410,7 +4363,6 @@ if (searchInput) {
 
                     }
                 );
-
 
             if (!filtered.length) {
 
@@ -4424,7 +4376,6 @@ if (searchInput) {
                 return;
 
             }
-
 
             container.innerHTML =
                 filtered
@@ -4446,55 +4397,58 @@ if (searchInput) {
                         function (item) {
 
                             const match =
-                                allMatches.find(
-                                    function (m) {
-
-                                        return (
-                                            m.id ===
-                                            item.matchId
-                                        );
-
-                                    }
+                                findMatchById(
+                                    item.matchId
                                 );
 
+                            const savedMatch =
+                                item.matchData ||
+                                {};
+
+                            const home =
+                                match
+                                    ? match.home
+                                    : savedMatch.home ||
+                                      "Match";
+
+                            const away =
+                                match
+                                    ? match.away
+                                    : savedMatch.away ||
+                                      "";
+
+                            const competition =
+                                match
+                                    ? match.competition
+                                    : savedMatch.competition ||
+                                      "Compétition inconnue";
 
                             return (
 
                                 '<div class="history-card">' +
 
-
                                 '<div class="history-main">' +
-
 
                                 "<strong>" +
 
-                                (
-                                    match
-
-                                        ? escapeHTML(
-                                            match.home +
-                                            " - " +
-                                            match.away
-                                        )
-
-                                        : "Match enregistré"
+                                escapeHTML(
+                                    home +
+                                    (
+                                        away
+                                            ? " - " + away
+                                            : ""
+                                    )
                                 ) +
 
                                 "</strong>" +
 
+                                "<span>" +
 
-                                (
-                                    match
-
-                                        ? "<span>" +
-                                          escapeHTML(
-                                              match.competition
-                                          ) +
-                                          "</span>"
-
-                                        : ""
+                                escapeHTML(
+                                    competition
                                 ) +
 
+                                "</span>" +
 
                                 (
                                     item.favoritePlayer
@@ -4508,7 +4462,6 @@ if (searchInput) {
                                         : ""
                                 ) +
 
-
                                 (
                                     item.officialMOTM
 
@@ -4520,7 +4473,6 @@ if (searchInput) {
 
                                         : ""
                                 ) +
-
 
                                 (
                                     item.watchProgress
@@ -4536,7 +4488,6 @@ if (searchInput) {
                                         : ""
                                 ) +
 
-
                                 (
                                     item.goalsSeen !== undefined
 
@@ -4546,7 +4497,6 @@ if (searchInput) {
 
                                         : ""
                                 ) +
-
 
                                 (
                                     item.comment
@@ -4560,9 +4510,7 @@ if (searchInput) {
                                         : ""
                                 ) +
 
-
                                 "</div>" +
-
 
                                 '<div class="rating">' +
 
@@ -4575,7 +4523,6 @@ if (searchInput) {
                                 "/10" +
 
                                 "</div>" +
-
 
                                 "</div>"
 
@@ -4590,10 +4537,9 @@ if (searchInput) {
 
 }
 
-
 /* =========================================================
    INITIALISATION
-========================================================= */
+   ========================================================= */
 
 updateSelectedDateDisplay();
 
